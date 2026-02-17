@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TrackPoster</title>
+    <link rel="stylesheet" href="/styles/styles.css" />
+    <script type="module" src="src/main.ts" defer></script>
+  </head>
+  <body x-data>
+    <div class="container">
+      <!-- No connection overlay-->
+      <div
+        class="no__connection__overlay"
+        x-show="!$store.serverOk"
+        x-transition.duration.500ms
+      >
+        <div class="overlay__content">
+          <div class="overlay__text">
+            <span> No connection </span>
+          </div>
+          <div class="overlay__subtext">
+            <p>Try re-run <code>trackposter</code> server</p>
+          </div>
+        </div>
+      </div>
+
+      <!--<template>-->
+      <div
+        class="menu__container"
+        x-show="!!$store.currentMenu"
+        x-transition.duration.500ms
+      >
+        <div class="menu">
+          <div class="close__menu__container">
+            <div class="close__menu__button">
+              <button @onclick="$store.modal.closeMenu()">Close</button>
+            </div>
+          </div>
+          <!-- Add track menu-->
+          <template x-if="$store.currentMenu==='addTrack'">
+            <div class="add__track__menu">
+              <div class="addTrack__menu__title">
+                <span> Add track</span>
+              </div>
+              <div class="addTrack__menu__form">
+                <span> Information</span>
+                <div class="addTrack__trackInfo">
+                  <input
+                    x-model="$store.trackInfo.trackTitle"
+                    placeholder="Title"
+                  />
+                  <input
+                    x-model="$store.trackInfo.trackAuthor"
+                    placeholder="Author"
+                  />
+                </div>
+                <span> URL </span>
+                <div class="addTrack__trackLink">
+                  <input
+                    x-model="$store.trackInfo.trackUrl"
+                    placeholder="URL"
+                  />
+                </div>
+                <div>
+                  <button @click="$store.modal.addTrack()">Add Track</button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+      <!--</template>-->
+
+      <!--Server status-->
+      <div class="status">
+        <div class="status__content">
+          <span>
+            Server status:
+
+            <!-- Connection states -->
+            <span class="status__text" x-data>
+              <template x-if="$store.serverOk">
+                <span class="success"> Connected </span>
+              </template>
+
+              <template x-if="!$store.serverOk">
+                <span class="fail">No connection </span>
+              </template>
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <!--Tracks list and controls-->
+      <div class="tracks__list" x-data="">
+        <div class="tracks__title">
+          <span> Tracks </span>
+        </div>
+        <hr />
+        <div x-if="!$store.tracksList" class="no__tracks">
+          <span> No tracks! </span>
+        </div>
+        <div x-if="$store.tracksList">
+          <!-- iterating through interface Track -->
+          <template x-for="(track, index) in $store.tracksList" :key="index">
+            <div class="track__container">
+              <div class="track__info">
+                <!-- Track title-->
+                <div class="track__name" style="flex-direction: row">
+                  <span x-text="track.author"></span> -
+                  <span x-text="track.title"></span>
+                </div>
+
+                <!-- Track duration -->
+                <div class="track__duration">
+                  <span x-text="$store.modal.secondsToDuration(track.duration)">
+                  </span>
+                </div>
+
+                <!--Actions-->
+                <div class="actions">
+                  <div class="track__actions">
+                    <!-- Remove from queue -->
+                    <button class="remove__button" title="Remove">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        width="24px"
+                        height="24px"
+                        fill="#FFFFFF"
+                      >
+                        <path
+                          d="M 10 2 L 9 3 L 3 3 L 3 5 L 21 5 L 21 3 L 15 3 L 14 2 L 10 2 z M 4.3652344 7 L 5.8925781 20.263672 C 6.0245781 21.253672 6.877 22 7.875 22 L 16.123047 22 C 17.121047 22 17.974422 21.254859 18.107422 20.255859 L 19.634766 7 L 4.3652344 7 z"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                  <!-- TODO: Change information -->
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Tracks controls -->
+      <div class="controls">
+        <!-- Add track -->
+        <div class="add__track__button">
+          <button @click="$store.modal.setCurrentMenu('addTrack')">
+            <span> Add Track </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
