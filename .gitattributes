@@ -1,1 +1,1 @@
-lib/**/ linguist-vendored
+extension/lib/* linguist-vendored=true
