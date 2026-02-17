@@ -1,10 +1,11 @@
 :root {
-  --color-bg: #0d0d0d;
-  --color-surface: #1a1a1a;
+  --color-bg: #0a0a0a;
+  --color-primary: #ffffff;
+  --color-secondary: #a1a1a1;
+  --color-accent: #ffb6c1;
+  --surface-color: #1a1a1a;
+
   --bg-surface-transparent: rgba(26, 26, 26, 0.4);
-  --color-primary: #ff007f;
-  --color-accent: #7000ff;
-  --color-text: #ffffff;
   --border-radius: 10px;
 }
 
