@@ -1,3 +1,3 @@
-extension/lib/* linguist-vendored=true
-extension/lib/** linguist-detectable=false
-extension/lib/** linguist-documentation=false
+extension/src/lib/* linguist-vendored=true
+extension/src/lib/** linguist-detectable=false
+extension/src/lib/** linguist-documentation=false
