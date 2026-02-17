@@ -1,1 +1,3 @@
 extension/lib/* linguist-vendored=true
+extension/lib/** linguist-detectable=false
+extension/lib/** linguist-documentation=false
