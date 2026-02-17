@@ -11,6 +11,7 @@ tasks:
   build:
     desc: Run tests and builds project
     env:
+      CGO_ENABLED: 0
       GOOS: "{{.GOOS}}"
       GOARCH: "{{.GOARCH}}"
     cmds:
@@ -19,6 +20,19 @@ tasks:
 
       # Build
       - go build -o {{.DIST}}/trackposter{{if eq .GOOS "windows"}}.exe{{end}} -ldflags="-s -w" ./cmd/trackposter
+    silent: false
+
+  run-tests:
+    desc: Run tests
+    env:
+      # Using cgo for race
+      CGO_ENABLED: 1
+
+      GOOS: "{{.GOOS}}"
+      GOARCH: "{{.GOARCH}}"
+    cmds:
+      - go test -v ./...
+      - go test -race ./...
     silent: false
 
   run-server:
