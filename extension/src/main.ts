@@ -6,7 +6,7 @@
  */
 
 // alpine module for window
-import "./lib/alpinejs.mjs";
+import "./lib/alpinejs";
 
 import { Track } from "./types/track";
 import { TrackposterClient } from "./client/client";
