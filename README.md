@@ -1,3 +1,4 @@
-# trackposter
+# Track Poster
+> **Go + TS extension** for automating sending tracks to *Telegram channel*.
 
-Music posting tool from Soundcloud.
+***Project in development***

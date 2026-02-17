@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+vars:
+  DIST: dist
+  GOARCH: amd64
+  GOOS: windows
+
+tasks:
+  build:
+    desc: Run tests and builds project
+    env:
+      GOOS: "{{.GOOS}}"
+      GOARCH: "{{.GOARCH}}"
+    cmds:
+      # Test all package
+      - go test -v ./...
+
+      # Build
+      - go build -o {{.DIST}}/trackposter{{if eq .GOOS "windows"}}.exe{{end}} -ldflags="-s -w" ./cmd/trackposter
+    silent: false
+
+  run-server:
+    desc: Runs server from source
+    cmds:
+      - go run ./cmd/trackposter

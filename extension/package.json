@@ -1,0 +1,29 @@
+{
+  "name": "track-poster",
+  "version": "0.0.1",
+  "description": "Automated track downloading and posting for Telegram channel",
+  "repository": "https://codeberg.org/TechAngle/track-poster",
+  "author": "TechAngle",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build-firefox": "pnpm clean-dist && bun compile-typescript && (bun copy-static | bun copy-firefox-manifest)",
+    "clean-dist": "shx rm -rf dist",
+    "compile-typescript": "bun build ./js/main.ts ./js/background.ts --outdir ./dist/js --minify",
+    "copy-firefox-manifest": "shx cp ./manifest/firefox.json dist/manifest.json",
+    "copy-static": "shx cp *.html dist/ | shx cp -r ./styles/ dist/"
+  },
+  "devDependencies": {
+    "@types/alpinejs": "^3.13.11",
+    "prettier": "^3.8.1",
+    "shx": "^0.4.0",
+    "vite": "^7.3.1",
+    "web-ext": "^9.3.0"
+  },
+  "private": false,
+  "dependencies": {
+    "alpinejs": "^3.15.8",
+    "dayjs": "^1.11.19",
+    "vite-plugin-web-extension": "^4.5.0"
+  }
+}

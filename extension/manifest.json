@@ -1,0 +1,21 @@
+{
+  "$schema": "https://www.schemastore.org/webextension.json",
+  "manifest_version": 2,
+  "name": "TrackPoster",
+  "short_name": "TP",
+  "version": "0.0.1",
+  "author": "TechAngle",
+  "developer": {
+    "name": "TechAngle",
+    "url": "https://codeberg.org/TechAngle"
+  },
+  "homepage_url": "https://codeberg.org/TechAngle/trackposter",
+  "background": {
+    "scripts": ["src/background.js"]
+  },
+  "permissions": ["scripting"],
+  "action": {
+    "default_title": "TrackPoster",
+    "default_popup": "index.html"
+  }
+}
