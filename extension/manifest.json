@@ -7,9 +7,9 @@
   "author": "TechAngle",
   "developer": {
     "name": "TechAngle",
-    "url": "https://codeberg.org/TechAngle"
+    "url": "https://github.com/TechAngle"
   },
-  "homepage_url": "https://codeberg.org/TechAngle/trackposter",
+  "homepage_url": "https://github.com/TechAngle/trackposter",
   "background": {
     "scripts": ["src/background.js"]
   },

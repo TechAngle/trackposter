@@ -2,7 +2,7 @@
   "name": "track-poster",
   "version": "0.0.1",
   "description": "Automated track downloading and posting for Telegram channel",
-  "repository": "https://codeberg.org/TechAngle/track-poster",
+  "repository": "https://github.com/TechAngle/trackposter",
   "author": "TechAngle",
   "type": "module",
   "license": "MIT",
