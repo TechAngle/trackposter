@@ -1,7 +1,7 @@
 // Copyright TechAngle 2026. All rights reserved.
 // Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
 //
-// Author: https://codeberg.com/TechAngle
+// Author: https://github.com/TechAngle
 
 package repository
 
@@ -20,7 +20,7 @@ func setBasicMockTrackData(mockTrack *models.Track) {
 	mockTrack.Title = "Hello World"
 	mockTrack.Author = "TechAngle"
 	mockTrack.Duration = 12345678
-	mockTrack.URL = "https://codeberg.org/TechAngle"
+	mockTrack.URL = "https://github.com/TechAngle"
 }
 
 func addTrackToQueue(t *testing.T) {
