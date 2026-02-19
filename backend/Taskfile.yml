@@ -4,16 +4,16 @@ version: "3"
 
 vars:
   DIST: dist
-  GOARCH: amd64
-  GOOS: windows
+
+  # Leaving it empty
+  CI:
 
 tasks:
   build:
     desc: Run tests and builds project
     env:
       CGO_ENABLED: 0
-      GOOS: "{{.GOOS}}"
-      GOARCH: "{{.GOARCH}}"
+
     cmds:
       # Test all package
       - go test -v ./...
@@ -25,8 +25,9 @@ tasks:
   run-tests:
     desc: Run tests
     env:
-      # Using cgo for race
+      # Using cgo for -race flag
       CGO_ENABLED: 1
+      CI: "{{.CI}}"
 
     cmds:
       - go test -v ./...
