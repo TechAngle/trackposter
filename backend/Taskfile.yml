@@ -28,8 +28,6 @@ tasks:
       # Using cgo for race
       CGO_ENABLED: 1
 
-      GOOS: "{{.GOOS}}"
-      GOARCH: "{{.GOARCH}}"
     cmds:
       - go test -v ./...
       - go test -race ./...
