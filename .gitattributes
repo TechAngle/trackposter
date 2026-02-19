@@ -1,3 +1,14 @@
+# For JS libs
 extension/src/lib/* linguist-vendored=true
 extension/src/lib/** linguist-detectable=false
 extension/src/lib/** linguist-documentation=false
+
+# For vite.config
+extension/vite.config.js linguist-vendored=true
+extension/vite.config.js linguist-detectable=false
+extension/vite.config.js linguist-documentation=false
+
+# For ignoring css styles
+extension/public/styles/** linguist-vendored=true
+extension/public/styles/** linguist-detectable=false
+extension/public/styles/** linguist-documentation=false
