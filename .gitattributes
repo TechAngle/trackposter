@@ -9,6 +9,6 @@ extension/vite.config.js linguist-detectable=false
 extension/vite.config.js linguist-documentation=false
 
 # For ignoring css styles
-extension/public/styles/** linguist-vendored=true
-extension/public/styles/** linguist-detectable=false
-extension/public/styles/** linguist-documentation=false
+extension/**/*.css linguist-vendored=true
+extension/**/*.css linguist-detectable=false
+extension/**/*.css linguist-documentation=false
