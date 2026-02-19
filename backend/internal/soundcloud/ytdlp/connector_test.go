@@ -7,11 +7,19 @@ package ytdlp
 
 import (
 	"testing"
+	"trackposter/internal/utils"
 
 	"github.com/stretchr/testify/assert"
 )
 
+// Tests that fail GH Actions builds because
+// 	they check if yt-dlp and ffmpeg are installed, and gh actions don't have ones.
+// Therefore we just skip them in tests.
+
 func TestYtDlpFound(t *testing.T) {
+	// skipping if its CI
+	utils.SkipIfCI(t)
+
 	ytDlpPath, err := ytDlpCommand()
 
 	assert.Equal(t, nil, err)
@@ -21,6 +29,9 @@ func TestYtDlpFound(t *testing.T) {
 }
 
 func TestFFMpegFound(t *testing.T) {
+	// skipping if its CI
+	utils.SkipIfCI(t)
+
 	ffmpegPath, err := ffmpegCommad()
 
 	assert.Equal(t, nil, err)

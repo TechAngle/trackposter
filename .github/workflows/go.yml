@@ -5,29 +5,28 @@ name: Go
 
 on:
   push:
-    branches: [ "main", "development" ]
+    branches: ["main", "development"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install Task
-      uses: go-task/setup-task@v1  
-      
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.23'
+      - uses: actions/checkout@v4
 
-    - name: Build
-      working-directory: ./backend
-      run: go build -v ./...
+      - name: Install Task
+        uses: go-task/setup-task@v1
 
-    - name: Test
-      working-directory: ./backend
-      run: task run-tests
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
+
+      - name: Run build
+        working-directory: ./backend
+        run: go build -v ./...
+
+      - name: Run tests
+        working-directory: ./backend
+        run: task run-tests -- CI=1
