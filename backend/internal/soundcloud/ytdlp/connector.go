@@ -14,6 +14,7 @@ import (
 	"log"
 	"os/exec"
 	types "trackposter/internal/soundcloud/types"
+	"trackposter/internal/soundcloud/utils"
 )
 
 // implements interface SoundcloudConnector in models
@@ -108,7 +109,7 @@ func (c *YtDlpConnector) applyOptions(options *YtDlpConnectorOptions) (err error
 }
 
 // create yt-dlp command with url and arguments
-func (c *YtDlpConnector) createYtDlpCommand(ctx context.Context, url string, args []string, stdout io.Writer, stderr io.Writer) *exec.Cmd {
+func (c *YtDlpConnector) newYtDlpCommand(ctx context.Context, url string, args []string, stdout io.Writer, stderr io.Writer) *exec.Cmd {
 	args = append(args, url) // adding url as the last argument
 
 	cmd := exec.CommandContext(ctx, c.ytDlpPath, args...)
@@ -127,7 +128,7 @@ func (c *YtDlpConnector) TrackMetadataFromURL(ctx context.Context, url string) (
 		"-o -", // write directly to stdout
 	}
 
-	cmd := c.createYtDlpCommand(ctx, url, args, &buffer, nil)
+	cmd := c.newYtDlpCommand(ctx, url, args, &buffer, nil)
 	if err = cmd.Run(); err != nil {
 		return nil, fmt.Errorf("failed to run yt-dlp command (arguments: %v): %v", args, err)
 	}
@@ -165,7 +166,7 @@ func (c *YtDlpConnector) TrackFromURL(ctx context.Context, url string) ([]byte, 
 		"-o", "-", // write directly to buffer
 	}
 
-	cmd := c.createYtDlpCommand(ctx, url, args, &buffer, nil)
+	cmd := c.newYtDlpCommand(ctx, url, args, &buffer, nil)
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("failed to run yt-dlp command(arguments: %v): %v", args, err)
 	}
@@ -173,9 +174,35 @@ func (c *YtDlpConnector) TrackFromURL(ctx context.Context, url string) ([]byte, 
 	return buffer.Bytes(), nil
 }
 
+// checks if track exists using yt-dlp command
+func (c *YtDlpConnector) trackValid(ctx context.Context, url string) bool {
+	args := []string{
+		"--simulate",
+		"--quiet",
+		"--no-warnings",
+	}
+
+	cmd := c.newYtDlpCommand(ctx, url, args, nil, nil)
+	// if url is not found - yt-dlp returns 404 and error exit code
+	if err := cmd.Run(); err != nil {
+		return false
+	}
+
+	return true
+}
+
+// Whether track is valid
+func (c *YtDlpConnector) IsTrackValid(ctx context.Context, url string) bool {
+	if !utils.IsSoundcloudURL(url) {
+		return false
+	}
+
+	return c.trackValid(ctx, url)
+}
+
 // Create new soundcloud connector based on yt-dlp.
 // Context is used for stop command execution
-func NewSoundcloudConnector(ctx context.Context, options *YtDlpConnectorOptions) (*YtDlpConnector, error) {
+func NewConnector(ctx context.Context, options *YtDlpConnectorOptions) (*YtDlpConnector, error) {
 	connector := &YtDlpConnector{}
 	err := connector.applyOptions(options)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"trackposter/internal/soundcloud/types"
+	"trackposter/internal/soundcloud/ytdlp"
 )
 
 // SoundCloud client structure
@@ -37,9 +38,26 @@ func (c *SoundcloudClient) Track(ctx context.Context, url string) ([]byte, error
 	return trackContent, nil
 }
 
-// Creates new soundcloud client based on connector
-func NewSCClient(connector types.SoundcloudConnector) *SoundcloudClient {
+// Whether track is valid
+func (c *SoundcloudClient) ValidTrack(ctx context.Context, url string) bool {
+	valid := c.connector.IsTrackValid(ctx, url)
+	return valid
+}
+
+// Creates new soundcloud client based on connector.
+// TODO: Add another connector, without python tool
+func NewSCClient(ctx context.Context) (*SoundcloudClient, error) {
+	connectorOptions, err := ytdlp.DefaultOptions()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get default options: %v", err)
+	}
+
+	connector, err := ytdlp.NewConnector(ctx, connectorOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init connector: %v", err)
+	}
+
 	return &SoundcloudClient{
 		connector: connector,
-	}
+	}, nil
 }

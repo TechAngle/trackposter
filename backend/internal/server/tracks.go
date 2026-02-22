@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strings"
 	"trackposter/internal/server/models"
+	"trackposter/internal/soundcloud/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,7 +29,7 @@ func (s *Server) addTrack(ctx *gin.Context) {
 	}
 
 	// check if link valid
-	if !isSoundcloudLink(trackRequest.URL) {
+	if !utils.IsSoundcloudURL(trackRequest.URL) {
 		ctx.JSON(http.StatusBadRequest, models.StatusResponse{
 			StatusMessage: "Invalid SoundCloud link",
 		})
