@@ -13,4 +13,7 @@ type SoundcloudConnector interface {
 
 	// Get track bytes from URL
 	TrackFromURL(ctx context.Context, url string) ([]byte, error)
+
+	// Whether track is valid
+	IsTrackValid(ctx context.Context, url string) bool
 }

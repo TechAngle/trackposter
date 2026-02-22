@@ -45,7 +45,7 @@ func TestCreateConnector(t *testing.T) {
 
 	createContext()
 
-	client, err := ytdlp.NewSoundcloudConnector(ctx, options)
+	client, err := ytdlp.NewConnector(ctx, options)
 	if err != nil {
 		cancelContext()
 		log.Panicf("failed to create yt-dlp soundcloud connector: %v\n", err)
