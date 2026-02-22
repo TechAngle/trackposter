@@ -17,24 +17,22 @@ import (
 // Therefore we just skip them in tests.
 
 func TestYtDlpFound(t *testing.T) {
-	// skipping if its CI
+	// skipping if its CI enviroment
 	utils.SkipIfCI(t)
 
 	ytDlpPath, err := ytDlpCommand()
-
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 	assert.NotEqual(t, "", ytDlpPath)
 
 	t.Logf("yt-dlp path: %s", ytDlpPath)
 }
 
 func TestFFMpegFound(t *testing.T) {
-	// skipping if its CI
+	// skipping if its CI enviroment
 	utils.SkipIfCI(t)
 
 	ffmpegPath, err := ffmpegCommad()
-
-	assert.Equal(t, nil, err)
+	assert.NoError(t, err)
 	assert.NotEqual(t, "", ffmpegPath)
 
 	t.Logf("ffmpeg path: %s", ffmpegPath)

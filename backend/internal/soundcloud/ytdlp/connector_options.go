@@ -7,7 +7,6 @@ package ytdlp
 
 import (
 	"fmt"
-	"trackposter/internal/utils"
 )
 
 // Options for connector
@@ -20,28 +19,41 @@ type YtDlpConnectorOptions struct {
 
 	// Skip yt-dlp updates check
 	SkipUpdates bool
+
+	// Download format
+	format Format
+}
+
+// Get default options.
+// Automatically finds yt-dlp and ffmpeg.
+// If one of them not found - returns error.
+func DefaultOptions() (options *YtDlpConnectorOptions, err error) {
+	ffmpegPath, err := ffmpegCommad()
+	if err != nil {
+		return nil, fmt.Errorf("cannot get ffmpeg command: %v", err)
+	}
+
+	ytDlpPath, err := ytDlpCommand()
+	if err != nil {
+		return nil, fmt.Errorf("cannot get ytdlp command: %v", err)
+	}
+
+	return &YtDlpConnectorOptions{
+		FFMpegPath:  ffmpegPath,
+		YtDlpPath:   ytDlpPath,
+		SkipUpdates: false,
+		format:      MP3,
+	}, nil
 }
 
 // Checks if options yt-dlp path is valid and returns it.
 // Returns error if it is not.
-func (o *YtDlpConnectorOptions) YtDlp() (string, error) {
-	if o.YtDlpPath == "" {
-		return "", fmt.Errorf("yt-dlp path is empty")
-	}
-
-	if !utils.IsPathValid(o.YtDlpPath) {
-		return "", fmt.Errorf("yt-dlp path is invalid")
-	}
-
-	return o.YtDlpPath, nil
+func (o *YtDlpConnectorOptions) YtDlp() string {
+	return o.YtDlpPath
 }
 
 // Checks if options ffmpeg path is valid and returns it.
 // Returns error if it is not.
-func (o *YtDlpConnectorOptions) FFMpeg() (string, error) {
-	if !utils.IsPathValid(o.FFMpegPath) {
-		return "", fmt.Errorf("yt-dlp path is invalid")
-	}
-
-	return o.YtDlpPath, nil
+func (o *YtDlpConnectorOptions) FFMpeg() string {
+	return o.YtDlpPath
 }

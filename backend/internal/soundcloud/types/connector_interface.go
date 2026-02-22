@@ -3,12 +3,14 @@
 //
 // Author: https://github.com/TechAngle
 
-package models
+package types
 
-type SoundcloudClient interface {
+import "context"
+
+type SoundcloudConnector interface {
 	// Get track metadata
-	TrackMetadataFromURL(url string) (*TrackMetadata, error)
+	TrackMetadataFromURL(ctx context.Context, url string) (*TrackMetadata, error)
 
 	// Get track bytes from URL
-	TrackFromURL(url string) (*[]byte, error)
+	TrackFromURL(ctx context.Context, url string) ([]byte, error)
 }
