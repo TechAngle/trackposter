@@ -12,5 +12,5 @@ export interface ITrackposterClient {
   getQueue(): Promise<TrackInfo[] | null>;
   addTrack(track: TrackInfo): Promise<string | null>;
   isServerAlive(): Promise<boolean>;
-  ping(): Promise<number>;
+  ping(): Promise<number | null>;
 }

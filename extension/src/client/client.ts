@@ -12,7 +12,7 @@ import { GetQueueError, TrackAdditionError } from "../types/errors";
 import { ITrackposterClient } from "../types/ITrackposterClient";
 
 interface PingResponse {
-  delta
+  delta: number;
 }
 
 /**
@@ -106,7 +106,7 @@ export class TrackposterClient implements ITrackposterClient {
       if (!res.ok) {
       }
 
-      const data:  = res.json();
+      const data: PingResponse = await res.json();
       return data.delta || null;
     } catch (err) {
       console.error(`Ping error: ${err}`);

@@ -5,11 +5,12 @@
  * Author: https://github.com/TechAngle
  */
 
-import type { Alpine as AlpineType } from "alpinejs";
+// @ts-ignore: fuck it
+import Alpine from "@alpinejs/csp";
 
 declare global {
   interface Window {
-    Alpine: AlpineType;
+    Alpine: typeof Alpine;
   }
 }
 
