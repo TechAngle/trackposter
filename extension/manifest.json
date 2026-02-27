@@ -10,10 +10,19 @@
     "url": "https://github.com/TechAngle"
   },
   "homepage_url": "https://github.com/TechAngle/trackposter",
-  "background": {
-    "scripts": ["src/background.js"]
-  },
-  "host_permissions": ["http://localhost/*", "http://127.0.0.1/*"],
+  "content_scripts": [
+    {
+      "matches": ["*://soundcloud.com/*"],
+      "run_at": "document_idle",
+      "js": ["src/background.js"]
+    }
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "https://soundcloud.com/*",
+    "https://*.soundcloud.com/*"
+  ],
   "permissions": ["scripting"],
   "action": {
     "default_title": "TrackPoster",
