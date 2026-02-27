@@ -7,15 +7,17 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "build-firefox": "pnpm clean-dist && bun compile-typescript && (bun copy-static | bun copy-firefox-manifest)",
+    "build-firefox": "pnpm clean-dist && bun compile-typescript && (bun copy-static | bun copy-firefox-manifest) && bun zip-ext",
     "clean-dist": "shx rm -rf dist",
     "dev": "vite | vite build --watch",
     "compile-typescript": "bun build ./src/main.ts ./src/background.ts --outdir ./dist/src --minify",
     "copy-firefox-manifest": "shx cp ./manifest.json dist/manifest.json",
-    "copy-static": "shx cp *.html dist/ | shx cp -r ./public/styles/ dist/"
+    "copy-static": "shx cp *.html dist/ | shx cp -r ./public/styles/ dist/",
+    "zip-ext": "cd dist && bestzip tp-extension.zip *"
   },
   "devDependencies": {
     "@types/alpinejs": "^3.13.11",
+    "bestzip": "^2.2.1",
     "prettier": "^3.8.1",
     "shx": "^0.4.0",
     "vite": "^7.3.1",
