@@ -6,8 +6,8 @@
 package models
 
 type Track struct {
-	Title    string `json:"trackTitle,omitempty"`
-	Author   string `json:"trackAuthor,omitempty"`
-	Duration int    `json:"trackDuration,omitempty"`
-	URL      string `json:"trackUrl,omitempty"`
+	Title    string  `json:"trackTitle,omitempty"`
+	Author   string  `json:"trackAuthor,omitempty"`
+	Duration float64 `json:"trackDuration,omitempty"`
+	URL      string  `json:"trackUrl,omitempty"`
 }

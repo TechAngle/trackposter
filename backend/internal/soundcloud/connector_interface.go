@@ -3,13 +3,16 @@
 //
 // Author: https://github.com/TechAngle
 
-package types
+package soundcloud
 
-import "context"
+import (
+	"context"
+	"trackposter/internal/soundcloud/types"
+)
 
 type SoundcloudConnector interface {
 	// Get track metadata
-	TrackMetadataFromURL(ctx context.Context, url string) (*TrackMetadata, error)
+	TrackMetadataFromURL(ctx context.Context, url string) (*types.TrackMetadata, error)
 
 	// Get track bytes from URL
 	TrackFromURL(ctx context.Context, url string) ([]byte, error)

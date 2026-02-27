@@ -6,9 +6,11 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"trackposter/internal/repository"
+	"trackposter/internal/soundcloud"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +19,7 @@ type Server struct {
 	verbose    bool
 	router     *gin.Engine
 	repository repository.Repository
+	soundcloud soundcloud.SoundcloudConnector
 }
 
 // Is repository provider nil
@@ -70,10 +73,21 @@ func (s *Server) SetRepository(repo repository.Repository) {
 	s.repository = repo
 }
 
+// Create new soundcloud client
+func newSoundCloudClient() (*soundcloud.SoundcloudClient, error) {
+	client, err := soundcloud.NewSCClient(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("failed to create new client: %v", err)
+	}
+
+	return client, nil
+}
+
 // Creates new server instance
-func NewServer() *Server {
+func NewServer(connector soundcloud.SoundcloudConnector) *Server {
 	server := &Server{}
 	server.router = server.setupRouter()
+	server.soundcloud = connector
 
 	return server
 }

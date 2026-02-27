@@ -12,20 +12,14 @@ import (
 	"net/http/httptest"
 	"testing"
 	"trackposter/internal/server/models"
+	"trackposter/internal/soundcloud/mock"
 
 	"github.com/stretchr/testify/assert"
 )
 
 // get mock track
 func mockTrack() *models.Track {
-	mockTrack := new(models.Track)
-
-	mockTrack.Title = "Paracosm"
-	mockTrack.Author = "Xtrullor"
-	mockTrack.Duration = 12345678
-	mockTrack.URL = "https://soundcloud.com/xtrullor/paracosm"
-
-	return mockTrack
+	return mock.MockTrack.AsTrack()
 }
 
 func TestGetNonExistingTrack(t *testing.T) {
@@ -50,6 +44,9 @@ func TestAddTrack(t *testing.T) {
 
 	// if we added track
 	assert.Equal(t, http.StatusAccepted, w.Code)
+	if w.Result().StatusCode == http.StatusInternalServerError {
+		t.Logf("%s", w.Body.String())
+	}
 
 	// if returned track id not empty
 	body, err := unmarshalBody[models.AddTrackResponse](w.Body)
@@ -63,7 +60,6 @@ func TestAddTrack(t *testing.T) {
 }
 
 func TestAddInvalidTrack(t *testing.T) {
-
 	w := httptest.NewRecorder()
 
 	// using just empty track
