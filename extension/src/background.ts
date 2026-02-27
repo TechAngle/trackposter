@@ -5,6 +5,16 @@
  * Author: https://github.com/TechAngle
  */
 
+import { TrackposterClient } from "./client/client";
+
+const client = new TrackposterClient();
+
+interface TrackInfo {
+  title: string;
+  author: string;
+  url: string;
+}
+
 const bodyElement = document.body;
 if (bodyElement == null) {
   throw new Error("cannot find body element");
@@ -44,12 +54,95 @@ function hasTpButton(soundActionsNode: Element): boolean {
   return !!soundActionsNode.querySelector(`.${BUTTON_CLASS}`);
 }
 
+async function addTrack(info: TrackInfo) {
+  try {
+    const id = await client.addTrack({
+      trackAuthor: info.author,
+      trackTitle: info.title,
+      trackUrl: info.url,
+    });
+
+    // if error haven't occurred
+    console.log(`Track ID: ${id}`);
+  } catch (err) {
+    console.error(`Failed to add track: ${err}`);
+  }
+}
+
+/**
+ * Find track URL for target
+ */
+function getTrackUrl(target: Element): string | null {
+  // checking if it's full page
+  if (target.closest(".l-listen-hero")) {
+    return window.location.origin + window.location.pathname;
+  }
+
+  const closestLink = target.closest("a") as HTMLAnchorElement | null;
+  const trackRoot = target.closest(
+    ".sound, .trackItem, .relatedList__item, .playableItem",
+  );
+  const link = closestLink || trackRoot?.querySelector('a[href*="/"]');
+
+  if (link && (link as HTMLAnchorElement).href) {
+    const url = new URL((link as HTMLAnchorElement).href);
+    const parts = url.pathname.split("/").filter(Boolean);
+
+    if (parts.length >= 2) {
+      return url.origin + url.pathname;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Extract information from target
+ */
+function extractInformation(target: Element): TrackInfo | null {
+  const content = target.closest(".sound__content");
+  if (content == null) {
+    // if content not found
+    console.error("content not found");
+    return null;
+  }
+
+  console.log("content found");
+
+  const title = content.querySelector(".soundTitle__title");
+  const userName = content.querySelector(".soundTitle__username");
+
+  if (!title || !userName) {
+    console.error("title or username not found");
+    return null;
+  }
+  console.log("title and username found");
+
+  const url = getTrackUrl(target);
+  if (!url) {
+    console.error("url not found");
+    return null;
+  }
+  console.log("url found");
+
+  return {
+    title: title.textContent.trim(),
+    author: userName.textContent.trim(),
+    url: url,
+  };
+}
+
 /**
  * Add button if not exists on current elements
  */
 function addButton(target: Element) {
   if (target == null) return;
   if (hasTpButton(target)) return;
+
+  // get information from target
+  const info = extractInformation(target);
+  if (info == null) throw new Error("failed to extract information");
+  console.log("Track info for button:", info);
 
   // creating sc-like button
   const tpButton = document.createElement("button");
@@ -65,6 +158,7 @@ function addButton(target: Element) {
   tpButton.ariaLabel = "Add track to the download queue";
   tpButton.type = "button";
   tpButton.tabIndex = 0;
+  tpButton.onclick = async () => await addTrack(info);
 
   target.appendChild(tpButton);
 
