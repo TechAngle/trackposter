@@ -96,19 +96,19 @@
         <template x-if="$store.tracksList.length > 0">
           <div>
             <!-- iterating through interface Track -->
-            <template x-for="(track, index) in $store.tracksList" :key="index">
+            <template x-for="track in $store.tracksList">
               <div class="track__container">
                 <div class="track__info">
                   <!-- Track title-->
                   <div class="track__name" style="flex-direction: row">
-                    <span x-text="track.author"></span> -
-                    <span x-text="track.title"></span>
+                    <span x-text="track.trackAuthor"></span> -
+                    <span x-text="track.trackTitle"></span>
                   </div>
 
                   <!-- Track duration -->
                   <div class="track__duration">
                     <span
-                      x-text="$store.modal.secondsToDuration(track.duration)"
+                      x-text="$store.modal.secondsToDuration(track.trackDuration)"
                     >
                     </span>
                   </div>

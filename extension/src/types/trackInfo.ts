@@ -10,7 +10,6 @@ interface TrackInfo {
   trackTitle: string;
   trackAuthor: string;
   trackUrl: string;
-  trackDuration?: string;
 }
 
 export { TrackInfo };

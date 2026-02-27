@@ -1,5 +1,4 @@
 {
-  "$schema": "https://www.schemastore.org/webextension.json",
   "manifest_version": 3,
   "name": "TrackPoster",
   "short_name": "TP",
@@ -17,12 +16,7 @@
       "js": ["src/background.js"]
     }
   ],
-  "host_permissions": [
-    "http://localhost/*",
-    "http://127.0.0.1/*",
-    "https://soundcloud.com/*",
-    "https://*.soundcloud.com/*"
-  ],
+  "host_permissions": ["http://localhost/*"],
   "permissions": ["scripting"],
   "action": {
     "default_title": "TrackPoster",
