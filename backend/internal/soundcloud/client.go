@@ -15,10 +15,12 @@ import (
 // SoundCloud client structure
 type SoundcloudClient struct {
 	// SoundCloud connector which provides all features
-	connector types.SoundcloudConnector
+	connector SoundcloudConnector
 }
 
 // Get track metadata from URL.
+//
+// If can't get a metadata it retunrs an error.
 func (c *SoundcloudClient) TrackMetadata(ctx context.Context, url string) (*types.TrackMetadata, error) {
 	metadata, err := c.connector.TrackMetadataFromURL(ctx, url)
 	if err != nil {
@@ -45,7 +47,9 @@ func (c *SoundcloudClient) ValidTrack(ctx context.Context, url string) bool {
 }
 
 // Creates new soundcloud client based on connector.
-// TODO: Add another connector, without python tool
+//
+// If failed to find ffmpeg or yt-dlp it returns an error.
+// TODO: Add another connector, without python tool.
 func NewSCClient(ctx context.Context) (*SoundcloudClient, error) {
 	connectorOptions, err := ytdlp.DefaultOptions()
 	if err != nil {

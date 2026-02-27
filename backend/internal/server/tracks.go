@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"strings"
 	"trackposter/internal/server/models"
-	"trackposter/internal/soundcloud/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,13 +27,16 @@ func (s *Server) addTrack(ctx *gin.Context) {
 		return
 	}
 
-	// check if link valid
-	if !utils.IsSoundcloudURL(trackRequest.URL) {
-		ctx.JSON(http.StatusBadRequest, models.StatusResponse{
-			StatusMessage: "Invalid SoundCloud link",
+	trackMetadata, err := s.soundcloud.TrackMetadataFromURL(ctx.Request.Context(), trackRequest.URL)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.StatusResponse{
+			StatusMessage: fmt.Sprintf("Cannot get track metadata: %v", err),
 		})
 		return
 	}
+
+	// set duration we got from url
+	trackRequest.Duration = trackMetadata.Duration
 
 	// adding track
 	trackId, err := s.repository.AddTrack(&trackRequest)

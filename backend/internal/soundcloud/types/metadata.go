@@ -5,6 +5,8 @@
 
 package types
 
+import "trackposter/internal/server/models"
+
 // Track metadata for yt-dlp
 type TrackMetadata struct {
 	ID             string  `json:"id"`
@@ -18,6 +20,17 @@ type TrackMetadata struct {
 	Duration       float64 `json:"duration"`
 	FileSize       int     `json:"fileSize"`
 	ReleaseDate    int     `json:"releaseDate"`
+	URL            string
+}
+
+// Return only required information for track
+func (t *TrackMetadata) AsTrack() *models.Track {
+	return &models.Track{
+		Title:    t.Title,
+		Duration: t.Duration,
+		Author:   t.Uploader,
+		URL:      t.URL,
+	}
 }
 
 // yt-dlp response command

@@ -17,7 +17,7 @@ import (
 	"trackposter/internal/soundcloud/utils"
 )
 
-// implements interface SoundcloudConnector in models
+// implements interface SoundcloudConnector
 // NOTE: YtDlp connector requires yt-dlp binary in PATH to work
 type YtDlpConnector struct {
 	// Path to yt-dlp
@@ -152,6 +152,7 @@ func (c *YtDlpConnector) TrackMetadataFromURL(ctx context.Context, url string) (
 		Duration:       response.Duration,
 		FileSize:       response.FilesizeApprox,
 		ReleaseDate:    response.Timestamp,
+		URL:            url,
 	}
 
 	return
