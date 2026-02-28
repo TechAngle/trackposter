@@ -23,7 +23,7 @@ if (bodyElement == null) {
 const SOUND_ACTIONS_QUERY_SELECTOR = ".soundActions > .sc-button-group";
 
 const BUTTON_CLASS = "tp__button";
-const BUTTON_TEXT = "[TP] Save To Queue";
+const BUTTON_TEXT = "[TP] Add To Queue";
 
 const mutationConfig: MutationObserverInit = {
   childList: true,
@@ -54,6 +54,9 @@ function hasTpButton(soundActionsNode: Element): boolean {
   return !!soundActionsNode.querySelector(`.${BUTTON_CLASS}`);
 }
 
+/**
+ * Send add track request to the server
+ */
 async function addTrack(info: TrackInfo) {
   try {
     const id = await client.addTrack({
@@ -78,6 +81,7 @@ function getTrackUrl(target: Element): string | null {
     return window.location.origin + window.location.pathname;
   }
 
+  // if it is recommended
   const closestLink = target.closest("a") as HTMLAnchorElement | null;
   const trackRoot = target.closest(
     ".sound, .trackItem, .relatedList__item, .playableItem",
@@ -100,34 +104,32 @@ function getTrackUrl(target: Element): string | null {
  * Extract information from target
  */
 function extractInformation(target: Element): TrackInfo | null {
-  const content = target.closest(".sound__content");
-  if (content == null) {
-    // if content not found
-    console.error("content not found");
+  const contextRoot = target.closest(
+    ".sound__content, .trackItem, .playableItem",
+  );
+
+  let titleEl = contextRoot?.querySelector(".soundTitle__title");
+  let authorEl = contextRoot?.querySelector(".soundTitle__username");
+
+  if (!titleEl || !authorEl) {
+    titleEl = document.querySelector(
+      ".soundTitle__titleHeroContainer .soundTitle__title",
+    );
+    authorEl = document.querySelector(
+      ".soundTitle__usernameHeroContainer .soundTitle__username",
+    );
+  }
+
+  if (!titleEl || !authorEl) {
     return null;
   }
 
-  console.log("content found");
-
-  const title = content.querySelector(".soundTitle__title");
-  const userName = content.querySelector(".soundTitle__username");
-
-  if (!title || !userName) {
-    console.error("title or username not found");
-    return null;
-  }
-  console.log("title and username found");
-
-  const url = getTrackUrl(target);
-  if (!url) {
-    console.error("url not found");
-    return null;
-  }
-  console.log("url found");
+  const url =
+    getTrackUrl(target) || window.location.origin + window.location.pathname;
 
   return {
-    title: title.textContent.trim(),
-    author: userName.textContent.trim(),
+    title: titleEl.textContent?.trim() || "Unknown Title",
+    author: authorEl.textContent?.trim() || "Unknown Author",
     url: url,
   };
 }
@@ -167,6 +169,21 @@ function addButton(target: Element) {
 
 // starting observing
 mutationObserver.observe(bodyElement, mutationConfig);
+
+let lastUrl = location.href;
+// checking for url updates and others
+setInterval(() => {
+  document.querySelectorAll(SOUND_ACTIONS_QUERY_SELECTOR).forEach(addButton);
+  if (location.href === lastUrl) {
+    return;
+  }
+
+  lastUrl = location.href;
+  setTimeout(() => {
+    // removing old buttons
+    document.querySelectorAll(`.${BUTTON_CLASS}`).forEach((el) => el.remove());
+  }, 1000);
+}, 1500);
 
 // calling first update
 document.querySelectorAll(SOUND_ACTIONS_QUERY_SELECTOR).forEach(addButton);

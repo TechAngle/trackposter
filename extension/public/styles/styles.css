@@ -101,11 +101,21 @@
 }
 
 md-outlined-button,
-md-filled-button {
+md-filled-button,
+md-text-button {
   padding: 8px;
   transition-duration: 300ms;
   transition-timing-function: ease-in-out;
   --md-elevation-level: 3;
+}
+
+a {
+  text-decoration: none;
+  color: var(--color-primary);
+}
+
+a:hover {
+  color: var(--color-secondary);
 }
 
 /* TODO: Separate to different files */
@@ -268,12 +278,28 @@ body {
 
 /* Tracks */
 
+.tracks__list__container {
+  display: block;
+  mask-clip: border-box;
+  max-height: 100%;
+  padding: 1.2rem;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 15px,
+    black calc(100% - 15px),
+    transparent 100%
+  );
+
+  overflow-y: scroll;
+}
+
 .tracks__list {
   display: flex;
   justify-content: center;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem;
+
+  gap: 0.2em;
 }
 
 .tracks__title {
@@ -295,8 +321,10 @@ body {
   display: flex;
   width: 100%;
   inset: 0;
-  padding: 0.8rem;
-  border: solid 1px var(--color-accent);
+  padding: 0.4rem;
+  background-color: var(--md-sys-color-secondary-container);
+  border: solid 1px var(--md-sys-color-tertiary);
+  border-radius: var(--border-radius);
 }
 
 .track__info {
