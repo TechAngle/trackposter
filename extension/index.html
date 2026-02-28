@@ -31,7 +31,11 @@
         x-show="!!$store.currentMenu"
         x-transition.duration.500ms
       >
-        <div class="menu">
+        <div
+          class="menu"
+          x-show="!!$store.currentMenu"
+          x-transition.duration.500ms
+        >
           <div class="close__menu__container">
             <div class="close__menu__button">
               <md-outlined-button @click="$store.modal.closeMenu()">
@@ -40,17 +44,19 @@
             </div>
           </div>
           <!-- Add track menu-->
-          <template x-if="$store.currentMenu==='addTrack'">
-            <div class="add__track__menu">
-              <span>
-                <strong>How to add track:</strong>
-                <ol style="justify-content: flex-start">
-                  <li>Open <strong>any</strong> track</li>
-                  <li>Find button <i>'[TP] Add to queue'</i></li>
-                </ol>
-              </span>
-            </div>
-          </template>
+          <div
+            class="add__track__menu"
+            x-show="$store.currentMenu === 'addTrack'"
+            x-transition.duration.250ms
+          >
+            <span>
+              <strong>How to add track:</strong>
+              <ol style="justify-content: flex-start">
+                <li>Open <strong>any</strong> track</li>
+                <li>Find button <i>'[TP] Add to queue'</i></li>
+              </ol>
+            </span>
+          </div>
         </div>
       </div>
       <!--</template>-->
@@ -82,27 +88,33 @@
       </div>
 
       <!--Tracks list and controls-->
-      <div class="tracks__list" x-data="">
-        <div class="tracks__title">
-          <span> Tracks </span>
-        </div>
-        <hr />
-        <template x-if="$store.tracksList.length === 0">
-          <div class="no__tracks">
-            <span> No tracks! </span>
-          </div>
-        </template>
+      <div class="tracks__title">
+        <span> Tracks </span>
+      </div>
+      <hr />
+      <div class="tracks__list__container" x-data="">
+        <div class="tracks__list">
+          <template x-if="$store.tracksList.length === 0">
+            <div class="no__tracks">
+              <span> No tracks! </span>
+            </div>
+          </template>
 
-        <template x-if="$store.tracksList.length > 0">
-          <div>
+          <template x-if="$store.tracksList.length > 0">
             <!-- iterating through interface Track -->
             <template x-for="track in $store.tracksList">
               <div class="track__container">
                 <div class="track__info">
                   <!-- Track title-->
                   <div class="track__name" style="flex-direction: row">
-                    <span x-text="track.trackAuthor"></span> -
-                    <span x-text="track.trackTitle"></span>
+                    <a
+                      :href="track.trackUrl"
+                      target="_blank"
+                      :title="track.trackAuthor+' - '+track.trackTitle"
+                    >
+                      <span x-text="track.trackAuthor"></span> -
+                      <span x-text="track.trackTitle"></span>
+                    </a>
                   </div>
 
                   <!-- Track duration -->
@@ -117,37 +129,37 @@
                   <div class="actions">
                     <div class="track__actions">
                       <!-- Remove from queue -->
-                      <md-outline-button title="Remove">
+                      <md-filled-button title="Remove">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
                           width="24px"
                           height="24px"
-                          fill="#FFFFFF"
+                          slot="icon"
+                          :fill="$store.theme.dark ? '#111' : '#FFF'"
                         >
                           <path
                             d="M 10 2 L 9 3 L 3 3 L 3 5 L 21 5 L 21 3 L 15 3 L 14 2 L 10 2 z M 4.3652344 7 L 5.8925781 20.263672 C 6.0245781 21.253672 6.877 22 7.875 22 L 16.123047 22 C 17.121047 22 17.974422 21.254859 18.107422 20.255859 L 19.634766 7 L 4.3652344 7 z"
                           />
                         </svg>
-                      </md-outline-button>
+                        Remove
+                      </md-filled-button>
                     </div>
                     <!-- TODO: Change information -->
                   </div>
                 </div>
               </div>
             </template>
-          </div>
-        </template>
+          </template>
+        </div>
       </div>
 
-      <!-- Tracks controls -->
+      <!-- Tracks controls infomation -->
       <div class="controls">
         <!-- Add track -->
-        <div class="add__track__button">
-          <md-outlined-button @click="$store.modal.setCurrentMenu('addTrack')">
-            <span> Add Track </span>
-          </md-outlined-button>
-        </div>
+        <md-outlined-button @click="$store.modal.setCurrentMenu('addTrack')">
+          <span> How to add Track </span>
+        </md-outlined-button>
       </div>
     </div>
   </body>
