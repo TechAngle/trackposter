@@ -1,27 +1,20 @@
 // Copyright TechAngle 2026. All rights reserved.
 // Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
 //
-// Author: https://codeberg.com/TechAngle
+// Author: https://github.com/TechAngle
 
 package repository
 
 import (
 	"testing"
-	"trackposter/internal/server/models"
+	"trackposter/internal/soundcloud/mock"
 )
 
 var (
 	mockQueue   = NewMemoryQueue()
-	mockTrack   = new(models.Track)
+	mockTrack   = mock.MockTrack.AsTrack()
 	mockTrackId = ""
 )
-
-func setBasicMockTrackData(mockTrack *models.Track) {
-	mockTrack.Title = "Hello World"
-	mockTrack.Author = "TechAngle"
-	mockTrack.Duration = 12345678
-	mockTrack.URL = "https://codeberg.org/TechAngle"
-}
 
 func addTrackToQueue(t *testing.T) {
 	t.Logf("Adding mock track to queue: %v", mockTrack)
@@ -49,8 +42,6 @@ func findTrack(t *testing.T) {
 }
 
 func TestMemoryQueueOperations(t *testing.T) {
-	setBasicMockTrackData(mockTrack)
-
 	// Adding to queue
 	addTrackToQueue(t)
 

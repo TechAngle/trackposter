@@ -2,7 +2,7 @@
  * Copyright TechAngle 2026. All rights reserved.
  * Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
  *
- * Author: https://codeberg.com/TechAngle
+ * Author: https://github.com/TechAngle
  */
 
 interface TrackInfo {
@@ -10,7 +10,6 @@ interface TrackInfo {
   trackTitle: string;
   trackAuthor: string;
   trackUrl: string;
-  trackDuration?: string;
 }
 
 export { TrackInfo };

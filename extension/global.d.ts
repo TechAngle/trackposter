@@ -2,14 +2,16 @@
  * Copyright TechAngle 2026. All rights reserved.
  * Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
  *
- * Author: https://codeberg.com/TechAngle
+ * Author: https://github.com/TechAngle
  */
 
-import type { Alpine as AlpineType } from "alpinejs";
+// @ts-ignore: fuck it
+import Alpine from "@alpinejs/csp";
 
 declare global {
   interface Window {
-    Alpine: AlpineType;
-    secondsToDuration: (v: number) => string;
+    Alpine: typeof Alpine;
   }
 }
+
+export {};

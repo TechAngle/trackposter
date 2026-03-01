@@ -1,7 +1,7 @@
 // Copyright TechAngle 2026. All rights reserved.
 // Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
 //
-// Author: https://codeberg.com/TechAngle
+// Author: https://github.com/TechAngle
 
 package repository
 
@@ -10,6 +10,7 @@ import (
 	"slices"
 	"sync"
 	"trackposter/internal/server/models"
+	sc "trackposter/internal/soundcloud/utils"
 	"trackposter/internal/utils"
 )
 
@@ -83,6 +84,11 @@ func (q *MemoryQueue) TrackByID(trackId string) *models.Track {
 func (q *MemoryQueue) AddTrack(track *models.Track) (string, error) {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
+
+	// check if link valid
+	if !sc.IsSoundcloudURL(track.URL) {
+		return "", fmt.Errorf("not soundcloud url")
+	}
 
 	// generating id for track
 	id, err := utils.GenerateUUID()

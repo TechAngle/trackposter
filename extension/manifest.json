@@ -1,18 +1,22 @@
 {
-  "$schema": "https://www.schemastore.org/webextension.json",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "TrackPoster",
   "short_name": "TP",
   "version": "0.0.1",
   "author": "TechAngle",
   "developer": {
     "name": "TechAngle",
-    "url": "https://codeberg.org/TechAngle"
+    "url": "https://github.com/TechAngle"
   },
-  "homepage_url": "https://codeberg.org/TechAngle/trackposter",
-  "background": {
-    "scripts": ["src/background.js"]
-  },
+  "homepage_url": "https://github.com/TechAngle/trackposter",
+  "content_scripts": [
+    {
+      "matches": ["*://soundcloud.com/*"],
+      "run_at": "document_idle",
+      "js": ["src/background.js"]
+    }
+  ],
+  "host_permissions": ["http://localhost/*"],
   "permissions": ["scripting"],
   "action": {
     "default_title": "TrackPoster",

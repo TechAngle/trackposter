@@ -2,18 +2,26 @@
  * Copyright TechAngle 2026. All rights reserved.
  * Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
  *
- * Author: https://codeberg.com/TechAngle
+ * Author: https://github.com/TechAngle
  */
 
-// alpine module for window
-import "./lib/alpinejs.mjs";
+// @ts-ignore: fuck it
+import Alpine from "@alpinejs/csp";
+
+window.Alpine = Alpine;
+
+import "./lib/alpinejs";
+import "@material/web/all.js";
 
 import { Track } from "./types/track";
 import { TrackposterClient } from "./client/client";
 import { secondsToDuration } from "./utils/time_utils";
-import trackInfoComponent from "./components/trackInfoComponent";
-import { TrackInfo } from "./types/trackInfo";
 import { HOST_PING_DELAY } from "./config/config";
+
+interface ThemeStore {
+  dark: boolean;
+  toggle: () => void;
+}
 
 const client = new TrackposterClient();
 
@@ -49,8 +57,30 @@ document.addEventListener("alpine:init", () => {
     setCurrentMenu: (menu: string) => {
       window.Alpine.store("currentMenu", menu);
     },
-    closeMenu: () => window.Alpine.store("currentMenu", ""),
+    closeMenu: () => {
+      window.Alpine.store("currentMenu", "");
+      console.log(window.Alpine.store("currentMenu"));
+    },
   });
+
+  // theme
+  window.Alpine.store("theme", {
+    dark: localStorage.getItem("theme") === "dark",
+
+    toggle(this: ThemeStore) {
+      this.dark = !this.dark;
+      localStorage.setItem("theme", this.dark ? "dark" : "light");
+      document.documentElement.setAttribute(
+        "data-theme",
+        this.dark ? "dark" : "light",
+      );
+    },
+  });
+
+  document.documentElement.setAttribute(
+    "data-theme",
+    localStorage.getItem("theme") === "dark" ? "dark" : "light",
+  );
 
   // checking server connection
   checkConnection();

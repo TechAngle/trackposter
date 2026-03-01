@@ -2,7 +2,7 @@
  * Copyright TechAngle 2026. All rights reserved.
  * Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
  *
- * Author: https://codeberg.com/TechAngle
+ * Author: https://github.com/TechAngle
  */
 
 import { DEFAULT_HOST } from "../config/config";
@@ -12,7 +12,7 @@ import { GetQueueError, TrackAdditionError } from "../types/errors";
 import { ITrackposterClient } from "../types/ITrackposterClient";
 
 interface PingResponse {
-  delta
+  delta: number;
 }
 
 /**
@@ -106,7 +106,7 @@ export class TrackposterClient implements ITrackposterClient {
       if (!res.ok) {
       }
 
-      const data:  = res.json();
+      const data: PingResponse = await res.json();
       return data.delta || null;
     } catch (err) {
       console.error(`Ping error: ${err}`);

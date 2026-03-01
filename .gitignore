@@ -2,5 +2,7 @@ node_modules/
 dist/
 bin/
 out/
+package-lock.json
+pnpm-lock.yaml
 *.out
 *.lock

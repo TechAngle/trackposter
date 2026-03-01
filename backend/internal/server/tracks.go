@@ -1,7 +1,7 @@
 // Copyright TechAngle 2026. All rights reserved.
 // Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
 //
-// Author: https://codeberg.com/TechAngle
+// Author: https://github.com/TechAngle
 
 package server
 
@@ -27,13 +27,16 @@ func (s *Server) addTrack(ctx *gin.Context) {
 		return
 	}
 
-	// check if link valid
-	if !isSoundcloudLink(trackRequest.URL) {
-		ctx.JSON(http.StatusBadRequest, models.StatusResponse{
-			StatusMessage: "Invalid SoundCloud link",
+	trackMetadata, err := s.soundcloud.TrackMetadataFromURL(ctx.Request.Context(), trackRequest.URL)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, models.StatusResponse{
+			StatusMessage: fmt.Sprintf("Cannot get track metadata: %v", err),
 		})
 		return
 	}
+
+	// set duration we got from url
+	trackRequest.Duration = trackMetadata.Duration
 
 	// adding track
 	trackId, err := s.repository.AddTrack(&trackRequest)

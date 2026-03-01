@@ -1,10 +1,67 @@
 // Copyright TechAngle 2026. All rights reserved.
 // Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
 //
-// Author: https://codeberg.com/TechAngle
+// Author: https://github.com/TechAngle
 
 package soundcloud
 
-func NewSCClient() {
-	// TODO: Finish SC downloader
+import (
+	"context"
+	"fmt"
+	"trackposter/internal/soundcloud/types"
+	"trackposter/internal/soundcloud/ytdlp"
+)
+
+// SoundCloud client structure
+type SoundcloudClient struct {
+	// SoundCloud connector which provides all features
+	connector SoundcloudConnector
+}
+
+// Get track metadata from URL.
+//
+// If can't get a metadata it retunrs an error.
+func (c *SoundcloudClient) TrackMetadata(ctx context.Context, url string) (*types.TrackMetadata, error) {
+	metadata, err := c.connector.TrackMetadataFromURL(ctx, url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get metadata: %v", err)
+	}
+
+	return metadata, nil
+}
+
+// Get track bytes from URL.
+func (c *SoundcloudClient) Track(ctx context.Context, url string) ([]byte, error) {
+	trackContent, err := c.connector.TrackFromURL(ctx, url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get track data: %v", err)
+	}
+
+	return trackContent, nil
+}
+
+// Whether track is valid
+func (c *SoundcloudClient) ValidTrack(ctx context.Context, url string) bool {
+	valid := c.connector.IsTrackValid(ctx, url)
+	return valid
+}
+
+// Creates new soundcloud client based on connector.
+//
+// If failed to find ffmpeg or yt-dlp it returns an error.
+// TODO: Add another connector, without python tool.
+func NewSCClient(ctx context.Context) (*SoundcloudClient, error) {
+	connectorOptions, err := ytdlp.DefaultOptions()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get default options: %v", err)
+	}
+
+	connector, err := ytdlp.NewConnector(ctx, connectorOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init connector: %v", err)
+	}
+
+	return &SoundcloudClient{
+		connector: connector,
+	}, nil
 }

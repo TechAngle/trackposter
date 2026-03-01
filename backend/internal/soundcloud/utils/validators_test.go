@@ -1,0 +1,44 @@
+// Copyright TechAngle 2026. All rights reserved.
+// Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
+//
+// Author: https://github.com/TechAngle
+
+package utils
+
+import "testing"
+
+func TestSoundсloudValidLinkWithoutArguments(t *testing.T) {
+	link := "https://soundcloud.com/xtrullor/paracosm"
+	isValid := IsSoundcloudURL(link)
+
+	if !isValid {
+		t.Fatalf("Valid link without arguments was defined as invalid! (%s != %v)", link, isValid)
+	}
+}
+
+func TestSoundcloudValidLinkWithArguments(t *testing.T) {
+	link := "https://soundcloud.com/xtrullor/paracosm?si=d45a2b0bec464eb0a7fcb2b15e55985e&utm_source=clipboard&utm_medium=text&utm_campaign=social_sharing"
+	isValid := IsSoundcloudURL(link)
+
+	if !isValid {
+		t.Fatalf("Valid link with arguments was defined as invalid! (%s != %v)", link, isValid)
+	}
+}
+
+func TestSoundcloudValidMobileLink(t *testing.T) {
+	link := "https://on.soundcloud.com/2hvQCqRgHjJ5UveMLY"
+	isValid := IsSoundcloudURL(link)
+
+	if !isValid {
+		t.Fatalf("Valid mobile link was defined as invalid! (%s != %v)", link, isValid)
+	}
+}
+
+func TestSoundcloudInvalidLink(t *testing.T) {
+	link := "https://soundcloud.org/xtrullor/paracosm" // soundcloud.com -> .org
+	isValid := IsSoundcloudURL(link)
+
+	if isValid {
+		t.Fatalf("Invalid link was defined as valid!")
+	}
+}

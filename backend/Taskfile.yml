@@ -4,21 +4,34 @@ version: "3"
 
 vars:
   DIST: dist
-  GOARCH: amd64
-  GOOS: windows
+
+  # Leaving it empty
+  CI:
 
 tasks:
   build:
     desc: Run tests and builds project
     env:
-      GOOS: "{{.GOOS}}"
-      GOARCH: "{{.GOARCH}}"
+      CGO_ENABLED: 0
+
     cmds:
       # Test all package
       - go test -v ./...
 
       # Build
       - go build -o {{.DIST}}/trackposter{{if eq .GOOS "windows"}}.exe{{end}} -ldflags="-s -w" ./cmd/trackposter
+    silent: false
+
+  run-tests:
+    desc: Run tests
+    env:
+      # Using cgo for -race flag
+      CGO_ENABLED: 1
+      CI: "{{.CI}}"
+
+    cmds:
+      - go test -v ./...
+      - go test -race ./...
     silent: false
 
   run-server:
