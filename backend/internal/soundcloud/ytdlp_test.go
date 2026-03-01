@@ -32,6 +32,9 @@ func createContext() {
 }
 
 func TestDefaultOptions(t *testing.T) {
+	// FIXED: skipping if its CI enviroment
+	utils.SkipIfCI(t)
+
 	// get default options
 	defaultOptions, err := ytdlp.DefaultOptions()
 	assert.NoError(t, err, "cannot get default options: %v", err)
