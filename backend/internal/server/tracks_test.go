@@ -66,7 +66,7 @@ func TestAddInvalidTrack(t *testing.T) {
 	track := models.Track{}
 	trackJson, _ := json.Marshal(track)
 
-	req := httptest.NewRequest("PUT", "/api/tracks/addTrack", bytes.NewReader(trackJson))
+	req := httptest.NewRequest("POST", "/api/tracks/addTrack", bytes.NewReader(trackJson))
 	testServer.router.ServeHTTP(w, req)
 
 	assert.NotEqual(t, w.Code, http.StatusOK)
