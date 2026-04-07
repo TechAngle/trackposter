@@ -27,5 +27,4 @@ jobs:
         run: go build -v ./...
 
       - name: Run tests
-        working-directory: ./backend
         run: task run-tests -- CI=1
