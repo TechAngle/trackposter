@@ -6,11 +6,13 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"context"
+	"errors"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+
 	"trackposter/internal/domain"
 	"trackposter/internal/soundcloud/ytdlp"
 	"trackposter/internal/telegram"
@@ -38,7 +40,7 @@ func stringToIDList(s string) ([]int64, error) {
 	for part := range parts {
 		i, err := strconv.ParseInt(part, 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse %s to int64: %w", part, err)
+			return nil, errors.Join(domain.ErrInvalidEnvID, err)
 		}
 
 		allowedIDs = append(allowedIDs, i)
@@ -47,19 +49,19 @@ func stringToIDList(s string) ([]int64, error) {
 	return allowedIDs, nil
 }
 
-// loadEnvConfig loads enviroment variables and returns config with filled values.
+// loadEnvConfig loads environment variables and returns config with filled values.
 //
 // Also returns an error if failed to load .env or parse allowed IDs list from it.
 func loadEnvConfig() (envConfig, error) {
-	if err := godotenv.Load(); err != nil {
-		return envConfig{}, fmt.Errorf("failed to load .env: %w", err)
+	if err := godotenv.Load(".env"); err != nil {
+		return envConfig{}, errors.Join(domain.ErrLoadEnv, err)
 	}
 
 	// parsing allowed ids string
 	allowedID := os.Getenv("ALLOWED_ID")
 	idList, err := stringToIDList(allowedID)
 	if err != nil {
-		return envConfig{}, fmt.Errorf("failed to parse IDs list: %w", err)
+		return envConfig{}, err
 	}
 
 	return envConfig{
@@ -72,12 +74,12 @@ func loadEnvConfig() (envConfig, error) {
 func initConnector() (domain.SoundcloudConnector, error) {
 	options, err := ytdlp.DefaultOptions()
 	if err != nil {
-		return nil, fmt.Errorf("Cannot get default options: %w", err)
+		return nil, errors.Join(domain.ErrDefaultOptions, err)
 	}
 
 	connector, err := ytdlp.NewConnector(options)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot create yt-dlp connector: %w", err)
+		return nil, errors.Join(domain.ErrNewConnector, err)
 	}
 
 	return connector, nil
@@ -86,12 +88,14 @@ func initConnector() (domain.SoundcloudConnector, error) {
 func main() {
 	config, err := loadEnvConfig()
 	if err != nil {
-		log.Fatalln("Failed to load config:", err)
+		logger.ErrorContext(ctx, "load config err", "error", err)
+		return
 	}
 
 	connector, err := initConnector()
 	if err != nil {
-		log.Fatalln("Failed to initialize a connector:", err)
+		logger.ErrorContext(ctx, "connector init err", "error", err)
+		return
 	}
 
 	telegram.NewBot(telegram.BotOptions{
