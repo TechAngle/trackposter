@@ -3,7 +3,7 @@
 //
 // Author: https://github.com/TechAngle
 
-package utils
+package uid
 
 import (
 	"fmt"
@@ -11,13 +11,13 @@ import (
 	"github.com/google/uuid"
 )
 
-// Generate UUID.
-// if something gone wrong - returns empty string and error
-func GenerateUUID() (string, error) {
-	_uuid, err := uuid.NewUUID()
+// New generates new UUID.
+// If something went wrong - returns empty string and error.
+func New() (string, error) {
+	uid, err := uuid.NewRandom()
 	if err != nil {
-		return "", fmt.Errorf("failed to create new uuid: %v", err)
+		return "", fmt.Errorf("new uuid: %v", err)
 	}
 
-	return _uuid.String(), nil
+	return uid.String(), nil
 }
