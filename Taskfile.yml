@@ -3,7 +3,8 @@
 version: "3"
 
 vars:
-  DIST: dist
+  DIST: bin
+  OUT: trackposter
 
   # Leaving it empty
   CI:
@@ -19,7 +20,7 @@ tasks:
       - go test -v ./...
 
       # Build
-      - go build -o {{.DIST}}/trackposter{{if eq .GOOS "windows"}}.exe{{end}} -ldflags="-s -w" ./cmd/trackposter
+      - go build -o {{.DIST}}/{{.OUT}}{{if eq .GOOS "windows"}}.exe{{end}} -ldflags="-s -w" ./cmd/trackposter
     silent: false
 
   run-tests:
@@ -34,7 +35,11 @@ tasks:
       - go test -race ./...
     silent: false
 
-  run-server:
-    desc: Runs server from source
+  run-windows:
+    desc: Runs Trackposter from source
+    deps:
+      - task: build
+        vars: { GOOS: windows, GOARCH: amd64 }
+
     cmds:
-      - go run ./cmd/trackposter
+      - ./bin/{{.OUT}}.exe
