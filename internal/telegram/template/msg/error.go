@@ -6,21 +6,40 @@
 package msg
 
 import (
-	"fmt"
 	"html"
+
 	"trackposter/internal/domain"
+	"trackposter/internal/pkg/pool"
 )
 
 // errorTemplate returns default template for error messages.
 //
-// Template look: ERROR: {message}
+// Template look: ERROR: {message}.
 func errorTemplate(message string) domain.MessageTemplate {
-	return domain.MessageTemplate(
-		fmt.Sprintf(
-			"<b>ERROR</b>: <i>%s</i>",
-			html.EscapeString(message),
-		),
-	)
+	s := pool.GetBuilder()
+	defer pool.PutBuilder(s)
+
+	s.Grow(len(message)*2 + 32)
+	s.WriteString("<b>ERROR</b>: <i>")
+	s.WriteString(html.EscapeString(message))
+	s.WriteString("</i>")
+
+	return domain.MessageTemplate(s.String())
+}
+
+func ErrorInternal(err error) domain.MessageTemplate {
+	s := pool.GetBuilder()
+	defer pool.PutBuilder(s)
+
+	s.WriteString("Internal error:\n")
+	s.WriteString(err.Error())
+
+	return errorTemplate(s.String())
+}
+
+// ErrorEmptyQueue template when tracks queue was found empty.
+func ErrorEmptyQueue() domain.MessageTemplate {
+	return errorTemplate("Queue is empty.")
 }
 
 // ErrorTrackNotFound template when track was not found on platform.
@@ -31,4 +50,15 @@ func ErrorTrackNotFound() domain.MessageTemplate {
 // ErrorInvalidURL template when user has provided an invalid URL.
 func ErrorInvalidURL() domain.MessageTemplate {
 	return errorTemplate("Invalid URL.")
+}
+
+// ErrorDownload template when connector returned an error.
+func ErrorDownload(err error) domain.MessageTemplate {
+	s := pool.GetBuilder()
+	defer pool.PutBuilder(s)
+
+	s.WriteString("Some track download failed due to error:\n")
+	s.WriteString(err.Error())
+
+	return errorTemplate(s.String())
 }
