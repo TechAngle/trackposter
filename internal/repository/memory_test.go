@@ -7,31 +7,32 @@ package repository
 
 import (
 	"testing"
+
 	"trackposter/internal/soundcloud/mock"
 )
 
 var (
 	mockQueue   = NewMemoryQueue()
 	mockTrack   = mock.MockTrack.AsTrack()
-	mockTrackId = ""
+	mockTrackID = ""
 )
 
 func addTrackToQueue(t *testing.T) {
 	t.Logf("Adding mock track to queue: %v", mockTrack)
-	trackId, err := mockQueue.AddTrack(mockTrack)
+	trackID, err := mockQueue.AddTrack(mockTrack)
 	if err != nil {
 		t.Fatalf("failed to add track: %v", err)
 	}
-	t.Logf("Track ID: %s", trackId)
+	t.Logf("Track ID: %s", trackID)
 
-	mockTrackId = trackId
+	mockTrackID = trackID
 }
 
 func findTrack(t *testing.T) {
-	t.Logf("Getting track back again by id %s", mockTrackId)
-	track := mockQueue.TrackByID(mockTrackId)
+	t.Logf("Getting track back again by id %s", mockTrackID)
+	track := mockQueue.TrackByID(mockTrackID)
 	if track == nil {
-		t.Fatalf("track mustn't be nil!")
+		t.Fatalf("track must not be nil!")
 	}
 
 	t.Logf("Returned track: %v", track)

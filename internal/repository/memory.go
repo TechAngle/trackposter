@@ -6,11 +6,17 @@
 package repository
 
 import (
-	"fmt"
+	"errors"
 	"slices"
 	"sync"
+
 	"trackposter/internal/domain"
-	"trackposter/internal/utils"
+	"trackposter/internal/uid"
+)
+
+const (
+	// trackNotFound returned when ID was not found in queue.
+	trackNotFound int = -1
 )
 
 type MemoryQueue struct {
@@ -18,41 +24,22 @@ type MemoryQueue struct {
 	queue []*domain.TrackRecord
 }
 
-// looks for track index in queue. Can return -1 if nothing found
-func (q *MemoryQueue) trackIndex(trackId string) int {
-	return slices.IndexFunc(q.queue, func(t *domain.TrackRecord) bool {
-		return t.ID == trackId
-	})
-}
+var _ domain.Repository = (*MemoryQueue)(nil)
 
-// finds track by its id
-func (q *MemoryQueue) trackById(trackId string) *domain.Track {
-	idx := q.trackIndex(trackId)
-	if idx == -1 {
-		return nil
+func NewMemoryQueue() *MemoryQueue {
+	return &MemoryQueue{
+		queue: make([]*domain.TrackRecord, 0),
 	}
-
-	return q.queue[idx].Track
 }
 
-// gets all tracks from queue and returns its model
-func (q *MemoryQueue) tracksFromQueue() []*domain.Track {
-	tracks := make([]*domain.Track, 0, len(q.queue))
-	for _, record := range q.queue {
-		tracks = append(tracks, record.AsTrack())
-	}
-
-	return tracks
-}
-
-// Remove track using its ID
-func (q *MemoryQueue) RemoveTrack(trackId string) error {
+// RemoveTrack looks up for track index and removes it from queue.
+func (q *MemoryQueue) RemoveTrack(trackID string) error {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
-	idx := q.trackIndex(trackId)
-	if idx == -1 {
-		return fmt.Errorf("track with ID %s do not exist", trackId)
+	idx := q.trackIndex(trackID)
+	if idx == trackNotFound {
+		return domain.ErrTrackNotFound
 	}
 
 	q.queue = slices.Delete(q.queue, idx, idx+1)
@@ -60,12 +47,12 @@ func (q *MemoryQueue) RemoveTrack(trackId string) error {
 	return nil
 }
 
-// Finds and returns track by its ID. If track not found - returns nil.
-func (q *MemoryQueue) TrackByID(trackId string) *domain.Track {
+// TrackByID finds and returns track from queue . If track not found - returns nil.
+func (q *MemoryQueue) TrackByID(trackID string) *domain.Track {
 	q.mutex.RLock()
 	defer q.mutex.RUnlock()
 
-	track := q.trackById(trackId)
+	track := q.trackByID(trackID)
 	return track
 }
 
@@ -75,15 +62,10 @@ func (q *MemoryQueue) AddTrack(track *domain.Track) (string, error) {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
-	// check if link valid
-	if !utils.IsSoundcloudURL(track.URL) {
-		return "", fmt.Errorf("not soundcloud url")
-	}
-
 	// generating id for track
-	id, err := utils.GenerateUUID()
+	id, err := uid.New()
 	if err != nil {
-		return "", fmt.Errorf("failed to generate track id: %v", err)
+		return "", errors.Join(domain.ErrUUID, err)
 	}
 
 	q.queue = append(q.queue, &domain.TrackRecord{
@@ -94,7 +76,7 @@ func (q *MemoryQueue) AddTrack(track *domain.Track) (string, error) {
 	return id, nil
 }
 
-// Gets tracks queue
+// Queue returns current tracks queue.
 func (q *MemoryQueue) Queue() []*domain.Track {
 	q.mutex.RLock()
 	defer q.mutex.RUnlock()
@@ -102,8 +84,27 @@ func (q *MemoryQueue) Queue() []*domain.Track {
 	return q.tracksFromQueue()
 }
 
-func NewMemoryQueue() *MemoryQueue {
-	return &MemoryQueue{
-		queue: make([]*domain.TrackRecord, 0),
+// trackIndex looks for track index in queue. Can return -1 if nothing was found.
+func (q *MemoryQueue) trackIndex(trackID string) int {
+	return slices.IndexFunc(q.queue, func(t *domain.TrackRecord) bool {
+		return t.ID == trackID
+	})
+}
+
+func (q *MemoryQueue) trackByID(trackID string) *domain.Track {
+	idx := q.trackIndex(trackID)
+	if idx == trackNotFound {
+		return nil
 	}
+
+	return q.queue[idx].Track
+}
+
+func (q *MemoryQueue) tracksFromQueue() []*domain.Track {
+	tracks := make([]*domain.Track, 0, len(q.queue))
+	for _, record := range q.queue {
+		tracks = append(tracks, record.AsTrack())
+	}
+
+	return tracks
 }
