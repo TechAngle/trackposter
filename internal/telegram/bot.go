@@ -6,149 +6,108 @@
 package telegram
 
 import (
-	"fmt"
-	"slices"
+	"context"
+	"errors"
+	"log/slog"
 	"strings"
-	"trackposter/internal/config"
+
 	"trackposter/internal/domain"
-	"trackposter/internal/utils"
+	"trackposter/internal/telegram/handlers/command"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-const ()
-
 type Queue chan tgbotapi.Update
-
-type Bot struct {
-	client       *tgbotapi.BotAPI
-	allowedIDs   []int64
-	messageQueue Queue
-	connector    domain.SoundcloudConnector
-}
 
 type BotOptions struct {
 	AllowedIDs []int64
-	Connector  domain.SoundcloudConnector
+	Connector  domain.Connector
+	Repository domain.Repository
+	Logger     *slog.Logger
 	APIToken   string
 }
 
-// Start starts polling for client with default timeout.
-func (b *Bot) Start() error {
-	if b.client == nil {
-		return fmt.Errorf("client was not initialized")
-	}
-
-	u := tgbotapi.NewUpdate(-1)
-	u.Timeout = 45
-	updates := b.client.GetUpdatesChan(u)
-
-	b.handleUpdates(updates)
-
-	if err := b.handleMessages(newQueue()); err != nil {
-		return fmt.Errorf("failed to handle messsages: %w", err)
-	}
-
-	return nil
+type Client struct {
+	client         *tgbotapi.BotAPI
+	commandHandler domain.TelegramHandler
+	// urlHandler     domain.TelegramHandler
+	allowedIDs   []int64
+	messageQueue Queue
+	repository   domain.Repository
+	connector    domain.Connector
+	logger       *slog.Logger
 }
 
-// Stop closes all queues
-func (b *Bot) Stop() {
-	close(b.messageQueue)
-}
-
-// NewBot creates new Bot structure with all defined fields
-func NewBot(options BotOptions) (*Bot, error) {
+// NewClient creates new Bot structure with all defined fields.
+//
+// If token was found empty returns ErrInvalidToken.
+// If failed to init new Telegram Bot API client returns ErrClientInit.
+func NewClient(options BotOptions) (*Client, error) {
 	if strings.TrimSpace(options.APIToken) == "" {
-		return nil, fmt.Errorf("invalid token")
+		return nil, domain.ErrInvalidToken
 	}
 
 	client, err := newClient(options.APIToken)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create bot client: %w", err)
+		return nil, errors.Join(domain.ErrClientInit, err)
 	}
 
-	return &Bot{
-		client:    client,
-		connector: options.Connector,
+	commandHandler, err := command.NewHandler(command.HandlerOptions{
+		Client:     client,
+		Connector:  options.Connector,
+		Repository: options.Repository,
+		Logger:     options.Logger.With("module", "CommandHandler"),
+	})
+	if err != nil {
+		return nil, errors.Join(domain.ErrHandlerInit, err)
+	}
+
+	return &Client{
+		client:         client,
+		commandHandler: commandHandler,
+		connector:      options.Connector,
+		repository:     options.Repository,
+		allowedIDs:     options.AllowedIDs,
+		logger:         options.Logger.With("module", "Client"),
+		messageQueue:   newQueue(),
 	}, nil
 }
 
-// newQueue creates a queue channel for messages.
-func newQueue() Queue {
-	return make(Queue, config.MaxQueueSize)
+// Start starts polling for client with default timeout.
+//
+// If client was not init returns ErrNilClient.
+func (c *Client) Start(ctx context.Context) error {
+	if c.client == nil {
+		return domain.ErrNilClient
+	}
+
+	u := tgbotapi.NewUpdate(-1)
+	u.Timeout = 45
+
+	updates := c.client.GetUpdatesChan(u)
+
+	c.handleUpdates(ctx, updates)
+	c.logger.InfoContext(ctx, "started updates handling")
+
+	c.processQueue(ctx, &c.messageQueue)
+	c.logger.InfoContext(ctx, "started queue processing")
+
+	<-ctx.Done()
+
+	return nil
 }
 
-// newClient creates new bot api client.
-//
-// Can return an error if failed to create bot api for some reason.
+// Stop closes all queues.
+func (c *Client) Stop(ctx context.Context) {
+	close(c.messageQueue)
+	c.logger.InfoContext(ctx, "queues were stopped")
+}
+
 func newClient(token string) (*tgbotapi.BotAPI, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create new bot api: %w", err)
+		return nil, err
 	}
 
-	return bot, err
-}
-
-// validMessage checks if message is not nil and contains text or caption.
-func validMessage(msg *tgbotapi.Message) bool {
-	return msg != nil && (msg.Text != "" || msg.Caption != "")
-}
-
-// messageText returns text or caption depends on what message contains.
-func messageText(msg *tgbotapi.Message) string {
-	if msg == nil {
-		return ""
-	}
-
-	if msg.Caption != "" {
-		return msg.Caption
-	}
-
-	return msg.Text
-}
-
-// addUpdate validates update and adds if it possible.
-//
-// # Requirements for update:
-//   - Update Message is found non-empty.
-//   - ID of user who sent the URL is allowed.
-func (b *Bot) addUpdate(update *tgbotapi.Update) {
-	if !validMessage(update.Message) {
-		return
-	}
-
-	if !slices.Contains(b.allowedIDs, update.Message.From.ID) {
-		return
-	}
-
-	b.messageQueue <- *update
-}
-
-// handleUpdates runs goroutine for receiving updates through channel and adds them
-// to the queue if they are valid.
-func (b *Bot) handleUpdates(updates tgbotapi.UpdatesChannel) {
-	go func() {
-		for update := range updates {
-			b.addUpdate(&update)
-		}
-	}()
-}
-
-// handleMessages processes messages queue. If regex URL was found it gets added to
-// tracks line.
-func (b *Bot) handleMessages(q Queue) error {
-	go func() {
-		for {
-			update := <-q
-			text := messageText(update.Message)
-
-			if !utils.IsSoundcloudURL(text) {
-
-			}
-		}
-	}()
-
-	return nil
+	return bot, nil
 }

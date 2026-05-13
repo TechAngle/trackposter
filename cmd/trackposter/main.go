@@ -14,6 +14,8 @@ import (
 	"strings"
 
 	"trackposter/internal/domain"
+	"trackposter/internal/logger"
+	"trackposter/internal/repository"
 	"trackposter/internal/soundcloud/ytdlp"
 	"trackposter/internal/telegram"
 
@@ -71,7 +73,7 @@ func loadEnvConfig() (envConfig, error) {
 }
 
 // initConnector creates a new soundcloud connector with default options.
-func initConnector() (domain.SoundcloudConnector, error) {
+func initConnector() (domain.Connector, error) {
 	options, err := ytdlp.DefaultOptions()
 	if err != nil {
 		return nil, errors.Join(domain.ErrDefaultOptions, err)
@@ -85,7 +87,16 @@ func initConnector() (domain.SoundcloudConnector, error) {
 	return connector, nil
 }
 
+func initRepository() domain.Repository {
+	return repository.NewMemoryQueue()
+}
+
 func main() {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	logger := logger.NewLogger()
+
 	config, err := loadEnvConfig()
 	if err != nil {
 		logger.ErrorContext(ctx, "load config err", "error", err)
@@ -98,9 +109,22 @@ func main() {
 		return
 	}
 
-	telegram.NewBot(telegram.BotOptions{
+	repository := initRepository()
+
+	c, err := telegram.NewClient(telegram.BotOptions{
 		Connector:  connector,
+		Repository: repository,
+		Logger:     &logger,
 		AllowedIDs: config.allowedIDs,
 		APIToken:   config.botToken,
 	})
+	if err != nil {
+		logger.ErrorContext(ctx, "bot init err", "error", err)
+		return
+	}
+	defer c.Stop(ctx)
+
+	if err := c.Start(ctx); err != nil {
+		logger.ErrorContext(ctx, "bot start err", "error", err)
+	}
 }
