@@ -22,7 +22,7 @@ type Track struct {
 	URL      string   `json:"trackUrl,omitempty"`
 }
 
-// TrackMetadata is metadata structure for yt-dlp response
+// TrackMetadata is metadata structure for yt-dlp response.
 type TrackMetadata struct {
 	ID             string  `json:"id"`
 	Title          string  `json:"title"`
@@ -33,8 +33,8 @@ type TrackMetadata struct {
 	AudioExtension string  `json:"audioExt"`
 	FileName       string  `json:"fileName"`
 	Duration       float64 `json:"duration"`
-	FileSize       int     `json:"fileSize"`
-	ReleaseDate    int     `json:"releaseDate"`
+	FileSize       float64 `json:"fileSize"`
+	ReleaseDate    float64 `json:"releaseDate"`
 	URL            string
 }
 
