@@ -7,24 +7,30 @@ package mock
 
 import (
 	"context"
-	"fmt"
+	"sync"
+
 	"trackposter/internal/domain"
-	"trackposter/internal/utils"
 )
 
 // Implements SoundCloud connector.
 //
-// Mock connector that returns pre-defined values from config
-type MockConnector struct{}
+// Mock connector that returns pre-defined values from config.
+type Connector struct {
+	mu sync.RWMutex
 
-func validUrl(url string) bool {
-	return utils.IsSoundcloudURL(url)
+	format domain.AudioFormat
 }
 
-// Get track metadata.
-func (c *MockConnector) TrackMetadataFromURL(ctx context.Context, url string) (*domain.TrackMetadata, error) {
-	if !validUrl(url) {
-		return nil, fmt.Errorf("invalid url provided")
+var _ domain.Connector = (*Connector)(nil)
+
+// TrackMetadataFromURL retrieves track metadata from URL.
+func (c *Connector) TrackMetadataFromURL(ctx context.Context, url string) (*domain.TrackMetadata, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	if err := domain.ValidateURL(url); err != nil {
+		return nil, err
 	}
 
 	// cloning and adding url
@@ -34,16 +40,42 @@ func (c *MockConnector) TrackMetadataFromURL(ctx context.Context, url string) (*
 	return &mockTrack, nil
 }
 
-// Get track bytes from URL
-func (c *MockConnector) TrackFromURL(ctx context.Context, url string) ([]byte, error) {
-	if !validUrl(url) {
-		return nil, fmt.Errorf("invalid url provided")
+// TrackFromURL retrieves track bytes from URL.
+// Uses format that was set in options.
+func (c *Connector) TrackFromURL(ctx context.Context, url string) ([]byte, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	if err := domain.ValidateURL(url); err != nil {
+		return nil, err
 	}
 
 	return MockTrackContent, nil
 }
 
-// Whether track is valid
-func (c *MockConnector) IsTrackValid(ctx context.Context, url string) bool {
-	return validUrl(url)
+// IsTrackValid checks if track is valid.
+func (c *Connector) IsTrackValid(ctx context.Context, url string) bool {
+	if err := ctx.Err(); err != nil {
+		return false
+	}
+
+	err := domain.ValidateURL(url)
+	return err != nil
+}
+
+// SetFormat updates audio format for downloading.
+func (c *Connector) SetFormat(format domain.AudioFormat) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.format = format
+}
+
+// AudioFormat returns currently used audio format for downloading.
+func (c *Connector) AudioFormat() domain.AudioFormat {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	return c.format
 }

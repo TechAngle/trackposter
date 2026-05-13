@@ -8,7 +8,7 @@ package mock
 import "trackposter/internal/domain"
 
 var (
-	// Mock track metadata
+	// Mock track metadata.
 	MockTrack domain.TrackMetadata = domain.TrackMetadata{
 		ID:             "666-dev-null",
 		Title:          "Never Gonna Give Your DOM Up",
@@ -24,6 +24,6 @@ var (
 		URL:            "https://soundcloud.com/gopther-hater/i-love-c",
 	}
 
-	// Mock track content that could be returned
-	MockTrackContent []byte = []byte{1, 2, 3, 4, 5}
+	// Mock track content that could be returned.
+	MockTrackContent = []byte{1, 2, 3, 4, 5}
 )

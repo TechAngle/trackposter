@@ -6,41 +6,41 @@
 package ytdlp
 
 import (
-	"fmt"
 	"os/exec"
+
 	"trackposter/internal/domain"
 )
 
-// YtDlpConnectorOptions represents options for initializing yt-dlp connector
-type YtDlpConnectorOptions struct {
+// ConnectorOptions represents options for initializing yt-dlp connector.
+type ConnectorOptions struct {
 	// YtDlpPath is an absolute path to yt-dlp executable.
 	YtDlpPath string
 
 	// FFMpegPath is an absolute path to ffmpeg executable.
 	FFMpegPath string
 
-	// FIX: Hardcoded ATM, will be accessible soon.
-	format domain.AudioFormat
+	// Format is audio type that will be used for downloading.
+	Format domain.AudioFormat
 }
 
 // DefaultOptions returns default options for connector.
 // Tries automatically find yt-dlp and ffmpeg in system path, but it can return an error
 // if one of them cannot be accessed.
-func DefaultOptions() (options YtDlpConnectorOptions, err error) {
+func DefaultOptions() (options ConnectorOptions, err error) {
 	ffmpegPath, err := findExec("ffmpeg")
 	if err != nil {
-		return YtDlpConnectorOptions{}, fmt.Errorf("cannot get ffmpeg command: %w", err)
+		return ConnectorOptions{}, err
 	}
 
 	ytDlpPath, err := findExec("yt-dlp")
 	if err != nil {
-		return YtDlpConnectorOptions{}, fmt.Errorf("cannot get ytdlp command: %w", err)
+		return ConnectorOptions{}, err
 	}
 
-	return YtDlpConnectorOptions{
+	return ConnectorOptions{
 		FFMpegPath: ffmpegPath,
 		YtDlpPath:  ytDlpPath,
-		format:     domain.MP3,
+		Format:     domain.FLAC,
 	}, nil
 }
 

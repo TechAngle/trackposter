@@ -6,60 +6,172 @@
 package ytdlp
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
-	"io"
+	"errors"
+	"log"
 	"os/exec"
+	"sync"
+
 	"trackposter/internal/domain"
-	"trackposter/internal/utils"
+	"trackposter/internal/pkg/pool"
 )
 
-// implements interface SoundcloudConnector
-// NOTE: YtDlp connector requires yt-dlp binary in PATH to work
-type YtDlpConnector struct {
+// Connector implements interface SoundcloudConnector.
+// NOTE: YtDlp connector requires yt-dlp binary in PATH to work.
+type Connector struct {
+	mu sync.RWMutex
+
 	ytDlpPath      string
 	ffmpegPath     string
 	downloadFormat domain.AudioFormat
 }
 
-var _ domain.SoundcloudConnector = (*YtDlpConnector)(nil)
+var _ domain.Connector = (*Connector)(nil)
 
-// create yt-dlp command with url and arguments
-func (c *YtDlpConnector) newYtDlpCommand(ctx context.Context, url string, args []string, stdout io.Writer, stderr io.Writer) *exec.Cmd {
-	args = append(args, url) // adding url as the last argument
+// NewConnector creates new soundcloud connector based on yt-dlp.
+func NewConnector(options ConnectorOptions) (*Connector, error) {
+	if options.YtDlpPath == "" {
+		return nil, domain.ErrMissingYtDlp
+	}
 
-	cmd := exec.CommandContext(ctx, c.ytDlpPath, args...)
-	cmd.Stderr = stderr
-	cmd.Stdout = stdout
+	if options.FFMpegPath == "" {
+		return nil, domain.ErrMissingFFMpeg
+	}
+
+	return &Connector{
+		ytDlpPath:      options.YtDlpPath,
+		ffmpegPath:     options.FFMpegPath,
+		downloadFormat: options.Format,
+	}, nil
+}
+
+// TrackMetadataFromURL retrieves track metadata from URL.
+func (c *Connector) TrackMetadataFromURL(ctx context.Context, url string) (metadata *domain.TrackMetadata, err error) {
+	buffer := pool.GetBuffer()
+	defer pool.PutBuffer(buffer)
+
+	r := NewRequest(
+		url,
+		domain.JSONMetadata,
+		domain.StdoutOutput,
+		domain.NoWarnings,
+	)
+	r.SetStdout(buffer)
+	r.SetStderr(buffer)
+
+	cmd := c.newCommand(ctx, r)
+	if err = cmd.Run(); err != nil {
+		return nil, errors.Join(domain.ErrYtDlp, err)
+	}
+
+	var response domain.YtDlpMetadataResponse
+	if err = json.Unmarshal(buffer.Bytes(), &response); err != nil {
+		log.Println(buffer.String())
+		return nil, errors.Join(domain.ErrUnmarshal, err)
+	}
+
+	metadata = metadataFromResponse(&response)
+
+	return
+}
+
+// TrackFromURL retrieves track bytes from URL.
+// Uses format that was set in options.
+func (c *Connector) TrackFromURL(ctx context.Context, url string) ([]byte, error) {
+	buffer := pool.GetBuffer()
+	defer pool.PutBuffer(buffer)
+
+	r := NewRequest(
+		url,
+		domain.UseFFMpegConversion,
+		"--audio-format", string(c.AudioFormat()),
+		domain.AddMetadata,
+		domain.EmbedMetadata,
+		domain.WriteThumbnail,
+		domain.StdoutOutput,
+	)
+
+	r.SetStdout(buffer)
+
+	cmd := c.newCommand(ctx, r)
+	if err := cmd.Run(); err != nil {
+		return nil, errors.Join(domain.ErrYtDlp, err)
+	}
+
+	return buffer.Bytes(), nil
+}
+
+// IsTrackValid checks if track is valid.
+func (c *Connector) IsTrackValid(ctx context.Context, url string) bool {
+	if err := domain.ValidateURL(url); err != nil {
+		return false
+	}
+
+	return c.trackValid(ctx, url)
+}
+
+// SetFormat updates audio format for downloading.
+func (c *Connector) SetFormat(format domain.AudioFormat) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.downloadFormat = format
+}
+
+// AudioFormat returns currently used audio format for downloading.
+func (c *Connector) AudioFormat() domain.AudioFormat {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	return c.downloadFormat
+}
+
+func (c *Connector) newCommand(ctx context.Context, r *CommandRequest) *exec.Cmd {
+	args := r.BuildArguments()
+
+	cmd := exec.CommandContext(ctx, c.ytDlpPath, args...) // #nosec G204
+	cmd.Stderr = r.Stderr
+	cmd.Stdout = r.Stdout
 
 	return cmd
 }
 
-// Get track metadata from URL
-func (c *YtDlpConnector) TrackMetadataFromURL(ctx context.Context, url string) (metadata *domain.TrackMetadata, err error) {
-	buffer := bytes.Buffer{}
+func (c *Connector) trackValid(ctx context.Context, url string) bool {
+	r := NewRequest(
+		url,
+		domain.Simulate,
+		domain.Quiet,
+		domain.NoWarnings,
+	)
 
-	args := []string{
-		"-j",   // json metadata
-		"-o -", // write directly to stdout
-	}
+	cmd := c.newCommand(ctx, r)
+	// if url is not found - yt-dlp returns 404 and error exit code
+	return cmd.Run() == nil
+}
 
-	cmd := c.newYtDlpCommand(ctx, url, args, &buffer, nil)
-	if err = cmd.Run(); err != nil {
-		return nil, fmt.Errorf("failed to run yt-dlp command (arguments: %v): %v", args, err)
-	}
-
-	var response domain.YtDlpMetadataResponse
-	err = json.Unmarshal(buffer.Bytes(), &response)
-
+func metadataFromResponse(response *domain.YtDlpMetadataResponse) *domain.TrackMetadata {
 	description, ok := response.Description.(string)
 	if !ok {
 		description = ""
 	}
 
-	metadata = &domain.TrackMetadata{
+	duration, err := response.Duration.Float64()
+	if err != nil {
+		duration = 0
+	}
+
+	filesize, err := response.FilesizeApprox.Float64()
+	if err != nil {
+		filesize = 0
+	}
+
+	timestamp, err := response.Timestamp.Float64()
+	if err != nil {
+		timestamp = 0
+	}
+
+	return &domain.TrackMetadata{
 		ID:             response.ID,
 		Title:          response.Title,
 		Uploader:       response.Uploader,
@@ -67,71 +179,9 @@ func (c *YtDlpConnector) TrackMetadataFromURL(ctx context.Context, url string) (
 		ThumbnailURL:   response.Thumbnail,
 		AudioExtension: response.AudioExt,
 		FileName:       response.Filename,
-		Duration:       response.Duration,
-		FileSize:       response.FilesizeApprox,
-		ReleaseDate:    response.Timestamp,
-		URL:            url,
+		Duration:       duration,
+		FileSize:       filesize,
+		ReleaseDate:    timestamp,
+		URL:            response.URL,
 	}
-
-	return
-}
-
-// Get track bytes from URL.
-// Uses format that was set in options.
-func (c *YtDlpConnector) TrackFromURL(ctx context.Context, url string) ([]byte, error) {
-	buffer := bytes.Buffer{}
-	args := []string{
-		"-t", string(c.downloadFormat), // format
-		"-o", "-", // write directly to buffer
-	}
-
-	cmd := c.newYtDlpCommand(ctx, url, args, &buffer, nil)
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("failed to run yt-dlp command(arguments: %v): %v", args, err)
-	}
-
-	return buffer.Bytes(), nil
-}
-
-// checks if track exists using yt-dlp command
-func (c *YtDlpConnector) trackValid(ctx context.Context, url string) bool {
-	args := []string{
-		"--simulate",
-		"--quiet",
-		"--no-warnings",
-	}
-
-	cmd := c.newYtDlpCommand(ctx, url, args, nil, nil)
-	// if url is not found - yt-dlp returns 404 and error exit code
-	if err := cmd.Run(); err != nil {
-		return false
-	}
-
-	return true
-}
-
-// Whether track is valid
-func (c *YtDlpConnector) IsTrackValid(ctx context.Context, url string) bool {
-	if !utils.IsSoundcloudURL(url) {
-		return false
-	}
-
-	return c.trackValid(ctx, url)
-}
-
-// NewConnector creates new soundcloud connector based on yt-dlp.
-func NewConnector(options YtDlpConnectorOptions) (*YtDlpConnector, error) {
-	if options.YtDlpPath == "" || options.FFMpegPath == "" {
-		return nil, fmt.Errorf(
-			"missing paths: yt-dlp='%s' ffmpeg='%s'",
-			options.YtDlpPath,
-			options.FFMpegPath,
-		)
-	}
-
-	return &YtDlpConnector{
-		ytDlpPath:      options.YtDlpPath,
-		ffmpegPath:     options.FFMpegPath,
-		downloadFormat: options.format,
-	}, nil
 }
