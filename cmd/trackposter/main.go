@@ -1,8 +1,10 @@
 // Copyright TechAngle 2026. All rights reserved.
-// Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
+// Use of this source code is controlled by MPL-2.0 that could be found in
+// LICENSE file.
 //
 // Author: https://github.com/TechAngle
 
+// Package main defines an entry point for app.
 package main
 
 import (
@@ -13,13 +15,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"trackposter/internal/domain"
 	"trackposter/internal/logger"
 	"trackposter/internal/repository"
 	"trackposter/internal/soundcloud/ytdlp"
 	"trackposter/internal/telegram"
-
-	"github.com/joho/godotenv"
 )
 
 type envConfig struct {

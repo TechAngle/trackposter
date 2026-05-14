@@ -4,18 +4,6 @@
 //
 // Author: https://github.com/TechAngle
 
+// Package domain provides all entities, structures, interfaces, errors,
+// templates across all internal package.
 package domain
-
-import (
-	"net/url"
-)
-
-// ValidateURL checks if provided URL can be parsed.
-func ValidateURL(link string) error {
-	_, err := url.Parse(link)
-	if err != nil {
-		return ErrInvalidURL
-	}
-
-	return nil
-}

@@ -1,0 +1,120 @@
+# yaml-language-server: https://www.schemastore.org/golangci-lint.json
+
+version: "2"
+
+run:
+  timeout: 2m
+  issues-exit-code: 1
+  allow-parallel-runners: true
+
+linters:
+  enable:
+    - errcheck
+    - errname
+    - errchkjson
+    - nilerr
+    - nilnesserr
+    - revive
+    - godot
+    - godoclint
+    - iface
+    - iotamixing
+    - dogsled
+    - durationcheck
+    - unused
+    - wrapcheck
+    - whitespace
+    - dupl
+    - prealloc
+    - perfsprint
+    - paralleltest
+    - copyloopvar
+    - fatcontext
+    - reassign
+    - testifylint
+    - inamedparam
+    - decorder
+    - bidichk
+    - containedctx
+    - dupword
+    - err113
+    - exptostd
+    - exhaustive
+    - exhaustruct
+    - forcetypeassert
+    - funcorder
+    - thelper
+    - staticcheck
+    - gocyclo
+    - gocritic
+    - arangolint
+    - asciicheck
+    - goheader
+    - embeddedstructfieldcheck
+    - contextcheck
+    - cyclop
+    - asasalint
+    - canonicalheader
+    - tagalign
+    - nestif
+    - sloglint
+    - sqlclosecheck
+    - varnamelen
+    - funlen
+    - nlreturn
+    - clickhouselint
+    - gocognit
+    - goconst
+    - makezero
+    - bodyclose
+    - noctx
+    - gosec
+    - tagliatelle
+    - unparam
+    - misspell
+    - govet
+    - ineffassign
+    - interfacebloat
+    - intrange
+    - ginkgolinter
+    - lll
+    - mirror
+    - mnd
+    - modernize
+    - musttag
+    - predeclared
+    - unqueryvet
+    - usestdlibvars
+    - usetesting
+    - wastedassign
+    - noinlineerr
+    - nolintlint
+    - nakedret
+    - ireturn
+    - rowserrcheck
+    - unconvert
+    - importas
+
+formatters:
+  settings:
+    gci:
+      no-inline-comments: true
+      no-prefix-comments: true
+      custom-order: true
+      no-lex-order: true
+      sections:
+        - standard
+        - default
+    gofumpt:
+      extra-rules: true
+      module-path: trackposter
+    golines:
+      max-len: 80
+      tab-len: 4
+      shorten-comments: true
+      reformat-tags: true
+      chain-split-dots: true
+
+  enable:
+    - gci
+    - golines

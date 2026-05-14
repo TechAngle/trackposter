@@ -1,19 +1,21 @@
 // Copyright TechAngle 2026. All rights reserved.
-// Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
+// Use of this source code is controlled by MPL-2.0 that could be found in
+// LICENSE file.
 //
 // Author: https://github.com/TechAngle
 
+// Package command defines Handler for handling command-like updates.
 package command
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"strings"
 
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"trackposter/internal/domain"
 	"trackposter/internal/telegram/template/msg"
-
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 const trackSeparator = " - "
@@ -52,6 +54,7 @@ func NewHandler(opts HandlerOptions) (*Handler, error) {
 
 	handler := &Handler{
 		client:     opts.Client,
+		commands:   map[string]Func{},
 		repository: opts.Repository,
 		connector:  opts.Connector,
 		logger:     logger,

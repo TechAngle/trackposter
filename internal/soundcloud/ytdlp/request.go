@@ -1,5 +1,6 @@
 // Copyright TechAngle 2026. All rights reserved.
-// Use of this source code is controlled by MPL-2.0 that could be found in LICENSE file.
+// Use of this source code is controlled by MPL-2.0 that could be found in
+// LICENSE file.
 //
 // Author: https://github.com/TechAngle
 
@@ -75,6 +76,7 @@ func (r *CommandRequest) SetStdout(w io.Writer) {
 	r.stdout = w
 }
 
+// SetStderr updates stderr output.
 func (r *CommandRequest) SetStderr(w io.Writer) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
