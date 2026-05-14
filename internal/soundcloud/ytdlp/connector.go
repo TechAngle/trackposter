@@ -20,8 +20,7 @@ import (
 	"trackposter/internal/pkg/pool"
 )
 
-// Connector implements interface SoundcloudConnector.
-// NOTE: YtDlp connector requires yt-dlp binary in PATH to work.
+// Connector realizes logic for work with yt-dlp tool.
 type Connector struct {
 	mu sync.RWMutex
 

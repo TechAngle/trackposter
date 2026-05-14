@@ -111,7 +111,8 @@ func (r *CommandRequest) AddArgument(arg string, replace bool) {
 	r.args[key] = value
 }
 
-// BuildArguments returns slice of arguments  for exec.CommandContext (or similar) with URL at the end.
+// BuildArguments returns slice of arguments  for exec.CommandContext (or
+// similar) with URL at the end.
 //
 // IMPORTANT: If failed to validate provided URL it will return an empty slice.
 func (r *CommandRequest) BuildArguments() []string {

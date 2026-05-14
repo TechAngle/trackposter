@@ -12,6 +12,7 @@ type TrackRecord struct {
 	ID    string
 }
 
+// Track provides simplified structure for tracks storage and management.
 type Track struct {
 	Title    string   `json:"trackTitle,omitempty"`
 	Author   string   `json:"trackAuthor,omitempty"`
@@ -35,7 +36,8 @@ type TrackMetadata struct {
 	URL            string
 }
 
-// AsTrack returns only important information (such as title, duration, author and url)
+// AsTrack returns only important information (such as title, duration, author
+// and url)
 // of the track.
 func (t *TrackMetadata) AsTrack() *Track {
 	return &Track{

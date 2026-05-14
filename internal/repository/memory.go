@@ -20,6 +20,8 @@ const (
 	trackNotFound int = -1
 )
 
+// MemoryQueue provides in-memory type of tracks ordering using slice of
+// []*domain.TrackRecord.
 type MemoryQueue struct {
 	mu    sync.RWMutex
 	queue []*domain.TrackRecord
@@ -27,6 +29,7 @@ type MemoryQueue struct {
 
 var _ domain.Repository = (*MemoryQueue)(nil)
 
+// NewMemoryQueue creates new instance of MemoryQueue.
 func NewMemoryQueue() *MemoryQueue {
 	return &MemoryQueue{
 		mu:    sync.RWMutex{},
@@ -49,7 +52,8 @@ func (q *MemoryQueue) RemoveTrack(trackID string) error {
 	return nil
 }
 
-// TrackByID finds and returns track from queue . If track not found - returns nil.
+// TrackByID finds and returns track from queue . If track not found - returns
+// nil.
 func (q *MemoryQueue) TrackByID(trackID string) *domain.Track {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
@@ -59,8 +63,8 @@ func (q *MemoryQueue) TrackByID(trackID string) *domain.Track {
 	return track
 }
 
-// Add new track to queue.
-// Returns track id and error(or nil).
+// AddTrack updates queue with new track.
+// Returns track id and error if occurred.
 func (q *MemoryQueue) AddTrack(track *domain.Track) (string, error) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
@@ -87,7 +91,8 @@ func (q *MemoryQueue) Queue() []*domain.Track {
 	return q.tracksFromQueue()
 }
 
-// trackIndex looks for track index in queue. Can return -1 if nothing was found.
+// trackIndex looks for track index in queue. Can return -1 if nothing was
+// found.
 func (q *MemoryQueue) trackIndex(trackID string) int {
 	return slices.IndexFunc(q.queue, func(t *domain.TrackRecord) bool {
 		return t.ID == trackID

@@ -10,6 +10,8 @@ import (
 	"context"
 )
 
+// Connector provides all logic for work with tracks from external sources and
+// their metadata.
 type Connector interface {
 	// TrackMetadataFromURL retrieves track metadata from URL.
 	TrackMetadataFromURL(
@@ -31,6 +33,7 @@ type Connector interface {
 	AudioFormat() AudioFormat
 }
 
+// AudioFormat represents type for audio formats used for downloading.
 type AudioFormat string
 
 // Audio format.

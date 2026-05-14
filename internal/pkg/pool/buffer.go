@@ -17,6 +17,8 @@ var bufferPool = sync.Pool{
 	},
 }
 
+// GetBuffer returns pointer to bytes.Buffer pool.
+// If pool type casting has failed it will return new allocated bytes.Buffer.
 func GetBuffer() *bytes.Buffer {
 	buf, ok := bufferPool.Get().(*bytes.Buffer)
 	if !ok {
@@ -26,6 +28,7 @@ func GetBuffer() *bytes.Buffer {
 	return buf
 }
 
+// PutBuffer resets and puts buffer back.
 func PutBuffer(buf *bytes.Buffer) {
 	buf.Reset()
 	bufferPool.Put(buf)

@@ -26,8 +26,8 @@ type ConnectorOptions struct {
 }
 
 // DefaultOptions returns default options for connector.
-// Tries automatically find yt-dlp and ffmpeg in system path, but it can return an error
-// if one of them cannot be accessed.
+// Tries automatically find yt-dlp and ffmpeg in system path, but it can return
+// an error if one of them cannot be accessed.
 func DefaultOptions() (options ConnectorOptions, err error) {
 	ffmpegPath, err := findExec("ffmpeg")
 	if err != nil {

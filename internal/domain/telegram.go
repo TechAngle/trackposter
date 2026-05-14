@@ -14,7 +14,8 @@ import (
 
 // TelegramHandler represents default handler for Telegram updates.
 type TelegramHandler interface {
-	// Handle processes incoming update and returns error if something went wrong.
+	// Handle processes incoming update and returns error if something went
+	// wrong.
 	Handle(ctx context.Context, update *tgbotapi.Update) error
 }
 

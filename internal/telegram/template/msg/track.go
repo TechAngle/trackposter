@@ -29,6 +29,7 @@ func TrackAdded(trackID string) domain.MessageTemplate {
 	return domain.MessageTemplate(builder.String())
 }
 
+// TracksQueue template for formatting tracks queue.
 func TracksQueue(tracks []*domain.Track) domain.MessageTemplate {
 	if len(tracks) == 0 {
 		return `<b>Queue is empty.</b>`

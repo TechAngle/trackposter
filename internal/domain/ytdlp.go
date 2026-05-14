@@ -22,20 +22,23 @@ const (
 	NoWarnings          string = "--no-warnings"
 )
 
-// YtDlpMetadataResponse is structure which represents a whole response of yt-dlp command.
+// YtDlpMetadataResponse is structure which represents a whole response of
+// yt-dlp command.
+//
+//nolint:tagliatelle
 type YtDlpMetadataResponse struct {
 	ID          string      `json:"id"`
 	Uploader    string      `json:"uploader"`
 	UploaderID  string      `json:"uploader_id"`
 	UploaderURL string      `json:"uploader_url"`
-	Timestamp   json.Number `json:"timestamp"` // Может быть float
+	Timestamp   json.Number `json:"timestamp"`
 	Title       string      `json:"title"`
 	Track       string      `json:"track"`
 	Description any         `json:"description"`
 	Thumbnails  []struct {
 		ID         string      `json:"id"`
 		URL        string      `json:"url"`
-		Width      json.Number `json:"width,omitempty"` 
+		Width      json.Number `json:"width,omitempty"`
 		Height     json.Number `json:"height,omitempty"`
 		Resolution string      `json:"resolution,omitempty"`
 		Preference json.Number `json:"preference,omitempty"`

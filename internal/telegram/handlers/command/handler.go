@@ -23,6 +23,7 @@ const trackSeparator = " - "
 // Func represents command handler function used for processing command input.
 type Func func(ctx context.Context, update *tgbotapi.Update) error
 
+// HandlerOptions holds default options used in Handler.
 type HandlerOptions struct {
 	Client     *tgbotapi.BotAPI
 	Repository domain.Repository
@@ -30,6 +31,7 @@ type HandlerOptions struct {
 	Logger     *slog.Logger
 }
 
+// Handler defines logic for processing commands input.
 type Handler struct {
 	client     *tgbotapi.BotAPI
 	repository domain.Repository

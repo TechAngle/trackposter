@@ -14,9 +14,7 @@ import (
 	"trackposter/internal/domain"
 )
 
-// Implements SoundCloud connector.
-//
-// Mock connector that returns pre-defined values from config.
+// Connector provides predefined values from constants.
 type Connector struct {
 	mu sync.RWMutex
 

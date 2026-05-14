@@ -15,7 +15,7 @@ const (
 )
 
 var (
-	// Mock track metadata.
+	// MockTrack is a random track metadata for tests.
 	MockTrack domain.TrackMetadata = domain.TrackMetadata{
 		ID:             "666-dev-null",
 		Title:          "Never Gonna Give Your DOM Up",
@@ -31,6 +31,7 @@ var (
 		URL:            "https://soundcloud.com/gopther-hater/i-love-c",
 	}
 
-	// Mock track content that could be returned.
+	// MockTrackContent is an example content that might be returned by real
+	// tool.
 	MockTrackContent = []byte{1, 2, 3, 4, 5}
 )

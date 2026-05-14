@@ -18,8 +18,10 @@ import (
 	"trackposter/internal/telegram/handlers/command"
 )
 
+// Queue represents channel for Telegram updates.
 type Queue chan tgbotapi.Update
 
+// BotOptions holds required options by bot.
 type BotOptions struct {
 	AllowedIDs []int64
 	Connector  domain.Connector
@@ -28,6 +30,7 @@ type BotOptions struct {
 	APIToken   string
 }
 
+// Client defines bot controller with handlers.
 type Client struct {
 	client         *tgbotapi.BotAPI
 	commandHandler domain.TelegramHandler

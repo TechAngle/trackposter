@@ -19,7 +19,7 @@ var (
 	ErrLookPath       = errors.New("look path err")
 )
 
-// Connector/repository error.
+// Connector error.
 var (
 	ErrConnectorInternal = errors.New("connector err")
 )

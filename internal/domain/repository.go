@@ -6,6 +6,8 @@
 
 package domain
 
+// Repository defines the contract for persisting and retrieving domain
+// entities.
 type Repository interface {
 	// Add new track to line. Returns track id and error.
 	AddTrack(track *Track) (string, error)
