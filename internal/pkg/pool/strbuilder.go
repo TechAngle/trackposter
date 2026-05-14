@@ -17,7 +17,12 @@ var builderPool = sync.Pool{
 }
 
 func GetBuilder() *strings.Builder {
-	return builderPool.Get().(*strings.Builder)
+	builder, ok := builderPool.Get().(*strings.Builder)
+	if !ok {
+		return new(strings.Builder)
+	}
+
+	return builder
 }
 
 func PutBuilder(b *strings.Builder) {
