@@ -103,7 +103,7 @@ func (q *MemoryQueue) trackByID(trackID string) *domain.Track {
 func (q *MemoryQueue) tracksFromQueue() []*domain.Track {
 	tracks := make([]*domain.Track, 0, len(q.queue))
 	for _, record := range q.queue {
-		tracks = append(tracks, record.AsTrack())
+		tracks = append(tracks, record.Track)
 	}
 
 	return tracks

@@ -161,9 +161,9 @@ func metadataFromResponse(response *domain.YtDlpMetadataResponse) *domain.TrackM
 		duration = 0
 	}
 
-	filesize, err := response.FilesizeApprox.Float64()
+	fileSize, err := response.FileSizeApprox.Float64()
 	if err != nil {
-		filesize = 0
+		fileSize = 0
 	}
 
 	timestamp, err := response.Timestamp.Float64()
@@ -181,7 +181,7 @@ func metadataFromResponse(response *domain.YtDlpMetadataResponse) *domain.TrackM
 		AudioExtension: response.AudioExt,
 		FileName:       response.Filename,
 		Duration:       duration,
-		FileSize:       filesize,
+		FileSize:       fileSize,
 		ReleaseDate:    timestamp,
 		URL:            response.URL,
 	}

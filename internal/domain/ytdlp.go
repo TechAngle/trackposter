@@ -109,7 +109,7 @@ type YtDlpMetadataResponse struct {
 	Tbr                json.Number `json:"tbr"`
 	Resolution         string      `json:"resolution"`
 	AspectRatio        any         `json:"aspect_ratio"`
-	FilesizeApprox     json.Number `json:"filesize_approx"`
+	FileSizeApprox     json.Number `json:"filesize_approx"`
 	HTTPHeaders        struct {
 		UserAgent      string `json:"User-Agent"`
 		Accept         string `json:"Accept"`

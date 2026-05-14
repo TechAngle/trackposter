@@ -11,10 +11,6 @@ type TrackRecord struct {
 	ID    string
 }
 
-func (r *TrackRecord) AsTrack() *Track {
-	return r.Track
-}
-
 type Track struct {
 	Title    string   `json:"trackTitle,omitempty"`
 	Author   string   `json:"trackAuthor,omitempty"`

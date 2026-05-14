@@ -7,6 +7,12 @@ package mock
 
 import "trackposter/internal/domain"
 
+const (
+	mockDuration    = 214.5
+	mockFileSize    = 8589934
+	mockReleaseDate = 1735689600
+)
+
 var (
 	// Mock track metadata.
 	MockTrack domain.TrackMetadata = domain.TrackMetadata{
@@ -18,9 +24,9 @@ var (
 		ThumbnailURL:   "https://i1.sndcdn.com/artworks-mock-large.jpg",
 		AudioExtension: "mp3",
 		FileName:       "rick_rolling_gopher_never_gonna_give_your_dom_up.mp3",
-		Duration:       214.5,
-		FileSize:       8589934,
-		ReleaseDate:    1735689600,
+		Duration:       mockDuration,
+		FileSize:       mockFileSize,
+		ReleaseDate:    mockReleaseDate,
 		URL:            "https://soundcloud.com/gopther-hater/i-love-c",
 	}
 
