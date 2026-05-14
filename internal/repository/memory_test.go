@@ -19,6 +19,8 @@ var (
 )
 
 func addTrackToQueue(t *testing.T) {
+	t.Helper()
+
 	t.Logf("Adding mock track to queue: %v", mockTrack)
 	trackID, err := mockQueue.AddTrack(mockTrack)
 	if err != nil {
@@ -30,6 +32,8 @@ func addTrackToQueue(t *testing.T) {
 }
 
 func findTrack(t *testing.T) {
+	t.Helper()
+
 	t.Logf("Getting track back again by id %s", mockTrackID)
 	track := mockQueue.TrackByID(mockTrackID)
 	if track == nil {
@@ -48,6 +52,8 @@ func findTrack(t *testing.T) {
 }
 
 func TestMemoryQueueOperations(t *testing.T) {
+	t.Parallel()
+
 	// Adding to queue
 	addTrackToQueue(t)
 
