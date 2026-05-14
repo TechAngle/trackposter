@@ -12,29 +12,34 @@ import (
 	"trackposter/internal/pkg/pool"
 )
 
+const (
+	msgLenMultiplier     = 2
+	additionalContentLen = 32
+)
+
 // errorTemplate returns default template for error messages.
 //
 // Template look: ERROR: {message}.
 func errorTemplate(message string) domain.MessageTemplate {
-	s := pool.GetBuilder()
-	defer pool.PutBuilder(s)
+	builder := pool.GetBuilder()
+	defer pool.PutBuilder(builder)
 
-	s.Grow(len(message)*2 + 32)
-	s.WriteString("<b>ERROR</b>: <i>")
-	s.WriteString(html.EscapeString(message))
-	s.WriteString("</i>")
+	builder.Grow(len(message)*msgLenMultiplier + additionalContentLen)
+	builder.WriteString("<b>ERROR</b>: <i>")
+	builder.WriteString(html.EscapeString(message))
+	builder.WriteString("</i>")
 
-	return domain.MessageTemplate(s.String())
+	return domain.MessageTemplate(builder.String())
 }
 
 func ErrorInternal(err error) domain.MessageTemplate {
-	s := pool.GetBuilder()
-	defer pool.PutBuilder(s)
+	builder := pool.GetBuilder()
+	defer pool.PutBuilder(builder)
 
-	s.WriteString("Internal error:\n")
-	s.WriteString(err.Error())
+	builder.WriteString("Internal error:\n")
+	builder.WriteString(err.Error())
 
-	return errorTemplate(s.String())
+	return errorTemplate(builder.String())
 }
 
 // ErrorEmptyQueue template when tracks queue was found empty.
@@ -54,11 +59,11 @@ func ErrorInvalidURL() domain.MessageTemplate {
 
 // ErrorDownload template when connector returned an error.
 func ErrorDownload(err error) domain.MessageTemplate {
-	s := pool.GetBuilder()
-	defer pool.PutBuilder(s)
+	builder := pool.GetBuilder()
+	defer pool.PutBuilder(builder)
 
-	s.WriteString("Some track download failed due to error:\n")
-	s.WriteString(err.Error())
+	builder.WriteString("Some track download failed due to error:\n")
+	builder.WriteString(err.Error())
 
-	return errorTemplate(s.String())
+	return errorTemplate(builder.String())
 }

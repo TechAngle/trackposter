@@ -185,9 +185,9 @@ func (h *Handler) sendRequest(ctx context.Context, c tgbotapi.Chattable) {
 
 func formatTrackName(track *domain.Track) string {
 	var name strings.Builder
-	name.Grow(len(track.Author) + len(track.Title) + 3)
+	name.Grow(len(track.Author) + len(track.Title) + len(trackSeparator))
 	name.WriteString(track.Author)
-	name.WriteString(" - ")
+	name.WriteString(trackSeparator)
 	name.WriteString(track.Title)
 
 	return name.String()
