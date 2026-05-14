@@ -175,6 +175,7 @@ func metadataFromResponse(response *domain.YtDlpMetadataResponse) *domain.TrackM
 		ID:             response.ID,
 		Title:          response.Title,
 		Uploader:       response.Uploader,
+		UploaderURL:    response.UploaderURL,
 		Description:    description,
 		ThumbnailURL:   response.Thumbnail,
 		AudioExtension: response.AudioExt,
