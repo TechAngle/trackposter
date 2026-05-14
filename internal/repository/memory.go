@@ -20,7 +20,7 @@ const (
 )
 
 type MemoryQueue struct {
-	mutex sync.RWMutex
+	mu    sync.RWMutex
 	queue []*domain.TrackRecord
 }
 
@@ -28,14 +28,15 @@ var _ domain.Repository = (*MemoryQueue)(nil)
 
 func NewMemoryQueue() *MemoryQueue {
 	return &MemoryQueue{
+		mu:    sync.RWMutex{},
 		queue: make([]*domain.TrackRecord, 0),
 	}
 }
 
 // RemoveTrack looks up for track index and removes it from queue.
 func (q *MemoryQueue) RemoveTrack(trackID string) error {
-	q.mutex.Lock()
-	defer q.mutex.Unlock()
+	q.mu.Lock()
+	defer q.mu.Unlock()
 
 	idx := q.trackIndex(trackID)
 	if idx == trackNotFound {
@@ -49,18 +50,19 @@ func (q *MemoryQueue) RemoveTrack(trackID string) error {
 
 // TrackByID finds and returns track from queue . If track not found - returns nil.
 func (q *MemoryQueue) TrackByID(trackID string) *domain.Track {
-	q.mutex.RLock()
-	defer q.mutex.RUnlock()
+	q.mu.RLock()
+	defer q.mu.RUnlock()
 
 	track := q.trackByID(trackID)
+
 	return track
 }
 
 // Add new track to queue.
 // Returns track id and error(or nil).
 func (q *MemoryQueue) AddTrack(track *domain.Track) (string, error) {
-	q.mutex.Lock()
-	defer q.mutex.Unlock()
+	q.mu.Lock()
+	defer q.mu.Unlock()
 
 	// generating id for track
 	id, err := uid.New()
@@ -78,8 +80,8 @@ func (q *MemoryQueue) AddTrack(track *domain.Track) (string, error) {
 
 // Queue returns current tracks queue.
 func (q *MemoryQueue) Queue() []*domain.Track {
-	q.mutex.RLock()
-	defer q.mutex.RUnlock()
+	q.mu.RLock()
+	defer q.mu.RUnlock()
 
 	return q.tracksFromQueue()
 }

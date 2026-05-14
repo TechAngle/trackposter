@@ -40,6 +40,7 @@ func NewConnector(options ConnectorOptions) (*Connector, error) {
 	}
 
 	return &Connector{
+		mu:             sync.RWMutex{},
 		ytDlpPath:      options.YtDlpPath,
 		ffmpegPath:     options.FFMpegPath,
 		downloadFormat: options.Format,
