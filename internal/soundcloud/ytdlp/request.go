@@ -14,34 +14,57 @@ import (
 	"trackposter/internal/domain"
 )
 
+const (
+	argsMultiplier  = 2
+	staticArgsCount = 2 // for '-i' and URL
+)
+
+// CommandRequest provides a builder for yt-dlp arguments.
 type CommandRequest struct {
 	mu sync.RWMutex
 
-	URL string
+	url string
 
-	// Args used for downloading and can select
-	Args map[string]string
+	// args used for downloading and can select
+	args map[string]string
 
-	Stdout io.Writer
-	Stderr io.Writer
+	stdout io.Writer
+	stderr io.Writer
 }
 
 // NewRequest returns built request.
 func NewRequest(url string, args ...string) *CommandRequest {
 	initArgs := defaultRequestArgs()
-	r := CommandRequest{
-		URL:    url,
-		Args:   map[string]string{},
-		Stdout: nil,
-		Stderr: nil,
+	req := CommandRequest{
+		mu:     sync.RWMutex{},
+		url:    url,
+		args:   map[string]string{},
+		stdout: nil,
+		stderr: nil,
 	}
-	r.Args = initArgs
+	req.args = initArgs
 
 	for _, arg := range args {
-		r.AddArgument(arg, true)
+		req.AddArgument(arg, true)
 	}
 
-	return &r
+	return &req
+}
+
+// Stdout returns currently used writer to stdout.
+func (r *CommandRequest) Stdout() io.Writer {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	return r.stdout
+}
+
+// Stderr returns currently used writer to stderr.
+func (r *CommandRequest) Stderr() io.Writer {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	return r.stderr
 }
 
 // SetStdout updates stdout output.
@@ -49,14 +72,14 @@ func (r *CommandRequest) SetStdout(w io.Writer) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.Stdout = w
+	r.stdout = w
 }
 
 func (r *CommandRequest) SetStderr(w io.Writer) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.Stderr = w
+	r.stderr = w
 }
 
 // AddArgument updates arguments list.
@@ -72,18 +95,18 @@ func (r *CommandRequest) AddArgument(arg string, replace bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	k, v, ok := strings.Cut(trimmed, " ")
+	key, value, ok := strings.Cut(trimmed, " ")
 	if !ok {
-		v = ""
+		value = ""
 	}
 
-	if strings.HasPrefix(k, "--") {
-		if _, ok := r.Args[k]; ok && !replace {
+	if strings.HasPrefix(key, "--") {
+		if _, ok := r.args[key]; ok && !replace {
 			return
 		}
 	}
 
-	r.Args[k] = v
+	r.args[key] = value
 }
 
 // BuildArguments returns slice of arguments  for exec.CommandContext (or similar) with URL at the end.
@@ -95,12 +118,12 @@ func (r *CommandRequest) BuildArguments() []string {
 		return []string{}
 	}
 
-	// `+ 2` for '-i' and URL parts.
-	total := len(r.Args)*2 + 2
+	pairs := len(r.args) * argsMultiplier
+	total := pairs + staticArgsCount
 
 	args := make([]string, 0, total)
 
-	for k, v := range r.Args {
+	for k, v := range r.args {
 		args = append(args, k)
 		if v != "" {
 			args = append(args, v)
@@ -108,7 +131,7 @@ func (r *CommandRequest) BuildArguments() []string {
 	}
 
 	// Adding url as latest argument.
-	args = append(args, "-i", r.URL)
+	args = append(args, "-i", r.url)
 
 	return args
 }

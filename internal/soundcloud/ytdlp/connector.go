@@ -146,8 +146,8 @@ func (c *Connector) newCommand(
 	args := req.BuildArguments()
 
 	cmd := exec.CommandContext(ctx, c.ytDlpPath, args...) // #nosec G204
-	cmd.Stderr = r.Stderr
-	cmd.Stdout = r.Stdout
+	cmd.Stderr = req.stderr
+	cmd.Stdout = req.stdout
 
 	return cmd
 }

@@ -6,6 +6,7 @@
 package ytdlp
 
 import (
+	"errors"
 	"os/exec"
 
 	"trackposter/internal/domain"
