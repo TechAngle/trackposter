@@ -73,7 +73,7 @@ func loadEnvConfig() (envConfig, error) {
 }
 
 // initConnector creates a new soundcloud connector with default options.
-func initConnector() (domain.Connector, error) {
+func initConnector() (*ytdlp.Connector, error) {
 	options, err := ytdlp.DefaultOptions()
 	if err != nil {
 		return nil, errors.Join(domain.ErrDefaultOptions, err)
@@ -87,7 +87,7 @@ func initConnector() (domain.Connector, error) {
 	return connector, nil
 }
 
-func initRepository() domain.Repository {
+func initRepository() *repository.MemoryQueue {
 	return repository.NewMemoryQueue()
 }
 
