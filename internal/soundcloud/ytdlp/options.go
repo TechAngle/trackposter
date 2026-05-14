@@ -50,7 +50,7 @@ func DefaultOptions() (options ConnectorOptions, err error) {
 func findExec(execName string) (string, error) {
 	path, err := exec.LookPath(execName)
 	if err != nil {
-		return "", err
+		return "", errors.Join(domain.ErrLookPath, err)
 	}
 
 	return path, nil

@@ -106,7 +106,7 @@ func (c *Client) Stop(ctx context.Context) {
 func newClient(token string) (*tgbotapi.BotAPI, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(domain.ErrTelegramAPI, err)
 	}
 
 	return bot, nil
