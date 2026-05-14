@@ -20,7 +20,7 @@ import (
 //   - Update Message is found non-empty.
 //   - ID of user who sent the URL is allowed.
 func (c *Client) addUpdate(update *tgbotapi.Update) {
-	if !(validMessage(update.Message) || update.SentFrom() == nil) {
+	if !validMessage(update.Message) && update.SentFrom() != nil {
 		return
 	}
 
