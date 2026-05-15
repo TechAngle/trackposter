@@ -49,7 +49,6 @@ linters:
     - gocritic
     - arangolint
     - asciicheck
-    - goheader
     - embeddedstructfieldcheck
     - contextcheck
     - cyclop
@@ -97,17 +96,6 @@ linters:
 
 formatters:
   settings:
-    gci:
-      no-inline-comments: true
-      no-prefix-comments: true
-      custom-order: true
-      no-lex-order: true
-      sections:
-        - standard
-        - default
-    gofumpt:
-      extra-rules: true
-      module-path: trackposter
     golines:
       max-len: 80
       tab-len: 4

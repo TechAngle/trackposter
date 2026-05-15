@@ -1,9 +1,3 @@
-// Copyright TechAngle 2026. All rights reserved.
-// Use of this source code is controlled by MPL-2.0 that could be found in
-// LICENSE file.
-//
-// Author: https://github.com/TechAngle
-
 // Package telegram provides all logic for client to work with Telegram API.
 package telegram
 

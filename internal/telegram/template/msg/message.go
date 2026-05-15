@@ -1,15 +1,10 @@
-// Copyright TechAngle 2026. All rights reserved.
-// Use of this source code is controlled by MPL-2.0 that could be found in
-// LICENSE file.
-//
-// Author: https://github.com/TechAngle
-
 // Package msg provides templates with HTML formatting for Telegram.
 package msg
 
 import (
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"trackposter/internal/domain"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 // DefaultMessage returns default message config with pre-defined HTML parsing.
