@@ -96,6 +96,15 @@ linters:
 
 formatters:
   settings:
+    gci:
+      no-inline-comments: true
+      no-prefix-comments: true
+      custom-order: true
+      no-lex-order: false
+      sections:
+        - standard
+        - default
+        - localmodule
     golines:
       max-len: 80
       tab-len: 4
