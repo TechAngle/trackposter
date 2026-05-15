@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
 	"trackposter/internal/domain"
 	"trackposter/internal/telegram/template/msg"
 )

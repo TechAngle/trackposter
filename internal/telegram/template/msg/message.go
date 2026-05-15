@@ -2,9 +2,9 @@
 package msg
 
 import (
-	"trackposter/internal/domain"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
+	"trackposter/internal/domain"
 )
 
 // DefaultMessage returns default message config with pre-defined HTML parsing.

@@ -7,10 +7,10 @@ import (
 	"log/slog"
 	"strings"
 
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
 	"trackposter/internal/domain"
 	"trackposter/internal/telegram/template/msg"
-
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 const trackSeparator = " - "
