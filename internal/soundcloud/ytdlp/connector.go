@@ -48,42 +48,51 @@ func NewConnector(options ConnectorOptions) (*Connector, error) {
 }
 
 // TrackMetadataFromURL retrieves track metadata from URL.
-func (c *Connector) TrackMetadataFromURL(ctx context.Context, url string) (metadata *domain.TrackMetadata, err error) {
+func (c *Connector) TrackMetadataFromURL(
+	ctx context.Context,
+	url string,
+) (metadata *domain.TrackMetadata, err error) {
 	buffer := pool.GetBuffer()
 	defer pool.PutBuffer(buffer)
 
-	r := NewRequest(
+	req := NewRequest(
 		url,
 		domain.JSONMetadata,
 		domain.StdoutOutput,
 		domain.NoWarnings,
 	)
-	r.SetStdout(buffer)
-	r.SetStderr(buffer)
+	req.SetStdout(buffer)
 
-	cmd := c.newCommand(ctx, r)
-	if err = cmd.Run(); err != nil {
-		return nil, errors.Join(domain.ErrYtDlp, err)
+	cmd := c.newCommand(ctx, req)
+	err = cmd.Run()
+	if err != nil {
+		return nil, errors.Join(domain.ErrYtDlpCommand, err)
 	}
 
 	var response domain.YtDlpMetadataResponse
-	if err = json.Unmarshal(buffer.Bytes(), &response); err != nil {
+
+	err = json.Unmarshal(buffer.Bytes(), &response)
+	if err != nil {
 		log.Println(buffer.String())
+
 		return nil, errors.Join(domain.ErrUnmarshal, err)
 	}
 
 	metadata = metadataFromResponse(&response)
 
-	return
+	return metadata, nil
 }
 
 // TrackFromURL retrieves track bytes from URL.
 // Uses format that was set in options.
-func (c *Connector) TrackFromURL(ctx context.Context, url string) ([]byte, error) {
-	buffer := pool.GetBuffer()
-	defer pool.PutBuffer(buffer)
+func (c *Connector) TrackFromURL(
+	ctx context.Context,
+	url string,
+) ([]byte, error) {
+	// Using default bytes buffer instead of pool to avoid problems with stack.
+	buffer := new(bytes.Buffer)
 
-	r := NewRequest(
+	req := NewRequest(
 		url,
 		domain.UseFFMpegConversion,
 		"--audio-format", string(c.AudioFormat()),
@@ -93,11 +102,12 @@ func (c *Connector) TrackFromURL(ctx context.Context, url string) ([]byte, error
 		domain.StdoutOutput,
 	)
 
-	r.SetStdout(buffer)
+	req.SetStdout(buffer)
 
-	cmd := c.newCommand(ctx, r)
-	if err := cmd.Run(); err != nil {
-		return nil, errors.Join(domain.ErrYtDlp, err)
+	cmd := c.newCommand(ctx, req)
+	err := cmd.Run()
+	if err != nil {
+		return nil, errors.Join(domain.ErrYtDlpCommand, err)
 	}
 
 	return buffer.Bytes(), nil
@@ -105,7 +115,8 @@ func (c *Connector) TrackFromURL(ctx context.Context, url string) ([]byte, error
 
 // IsTrackValid checks if track is valid.
 func (c *Connector) IsTrackValid(ctx context.Context, url string) bool {
-	if err := domain.ValidateURL(url); err != nil {
+	err := domain.ValidateURL(url)
+	if err != nil {
 		return false
 	}
 
@@ -128,8 +139,11 @@ func (c *Connector) AudioFormat() domain.AudioFormat {
 	return c.downloadFormat
 }
 
-func (c *Connector) newCommand(ctx context.Context, r *CommandRequest) *exec.Cmd {
-	args := r.BuildArguments()
+func (c *Connector) newCommand(
+	ctx context.Context,
+	req *CommandRequest,
+) *exec.Cmd {
+	args := req.BuildArguments()
 
 	cmd := exec.CommandContext(ctx, c.ytDlpPath, args...) // #nosec G204
 	cmd.Stderr = r.Stderr
@@ -139,19 +153,21 @@ func (c *Connector) newCommand(ctx context.Context, r *CommandRequest) *exec.Cmd
 }
 
 func (c *Connector) trackValid(ctx context.Context, url string) bool {
-	r := NewRequest(
+	req := NewRequest(
 		url,
 		domain.Simulate,
 		domain.Quiet,
 		domain.NoWarnings,
 	)
 
-	cmd := c.newCommand(ctx, r)
+	cmd := c.newCommand(ctx, req)
 	// if url is not found - yt-dlp returns 404 and error exit code
 	return cmd.Run() == nil
 }
 
-func metadataFromResponse(response *domain.YtDlpMetadataResponse) *domain.TrackMetadata {
+func metadataFromResponse(
+	response *domain.YtDlpMetadataResponse,
+) *domain.TrackMetadata {
 	description, ok := response.Description.(string)
 	if !ok {
 		description = ""

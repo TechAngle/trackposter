@@ -11,7 +11,10 @@ import (
 
 type Connector interface {
 	// TrackMetadataFromURL retrieves track metadata from URL.
-	TrackMetadataFromURL(ctx context.Context, url string) (*TrackMetadata, error)
+	TrackMetadataFromURL(
+		ctx context.Context,
+		url string,
+	) (*TrackMetadata, error)
 
 	// TrackFromURL retrieves track bytes from URL.
 	// Uses format that was set in options.

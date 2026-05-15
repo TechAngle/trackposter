@@ -12,14 +12,23 @@ import (
 )
 
 // DefaultMessage returns default message config with pre-defined HTML parsing.
-func DefaultMessage[T domain.MessageTemplate | string](chatID int64, text T) tgbotapi.MessageConfig {
+func DefaultMessage[T domain.MessageTemplate | string](
+	chatID int64,
+	text T,
+) tgbotapi.MessageConfig {
 	msg := tgbotapi.NewMessage(chatID, string(text))
 	msg.ParseMode = tgbotapi.ModeHTML
 
 	return msg
 }
 
-func DefaultEditMessage[T domain.MessageTemplate | string](chatID int64, msgID int, text T) tgbotapi.EditMessageTextConfig {
+// DefaultEditMessage returns default edit message config with predefined HTML
+// parsing.
+func DefaultEditMessage[T domain.MessageTemplate | string](
+	chatID int64,
+	msgID int,
+	text T,
+) tgbotapi.EditMessageTextConfig {
 	config := tgbotapi.NewEditMessageText(
 		chatID,
 		msgID,

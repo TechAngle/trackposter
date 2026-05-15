@@ -38,7 +38,11 @@ func findTrack(t *testing.T) {
 	t.Logf("Returned track: %v", track)
 
 	if track.URL != mockTrack.URL || track.Duration != mockTrack.Duration {
-		t.Fatalf("returned track is not the same as added one! %v != %v", track, mockTrack)
+		t.Fatalf(
+			"returned track is not the same as added one! %v != %v",
+			track,
+			mockTrack,
+		)
 	}
 }
 

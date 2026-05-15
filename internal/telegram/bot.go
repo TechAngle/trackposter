@@ -100,6 +100,7 @@ func (c *Client) Start(ctx context.Context) error {
 // Stop closes all queues.
 func (c *Client) Stop(ctx context.Context) {
 	close(c.messageQueue)
+
 	c.logger.InfoContext(ctx, "queues were stopped")
 }
 

@@ -7,11 +7,12 @@ package telegram
 
 import (
 	"context"
+	"errors"
 	"slices"
 
-	"trackposter/internal/telegram/template/msg"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"trackposter/internal/domain"
+	"trackposter/internal/telegram/template/msg"
 )
 
 // addUpdate validates update and adds if it possible.
@@ -31,7 +32,10 @@ func (c *Client) addUpdate(update *tgbotapi.Update) {
 	c.messageQueue <- *update
 }
 
-func (c *Client) handleUpdates(ctx context.Context, updates tgbotapi.UpdatesChannel) {
+func (c *Client) handleUpdates(
+	ctx context.Context,
+	updates tgbotapi.UpdatesChannel,
+) {
 	go func() {
 		for {
 			select {
@@ -44,38 +48,58 @@ func (c *Client) handleUpdates(ctx context.Context, updates tgbotapi.UpdatesChan
 				}
 
 				c.addUpdate(&update)
-				c.logger.InfoContext(ctx, "updated queue with update", "update_id", update.UpdateID)
+				c.logger.InfoContext(
+					ctx,
+					"updated queue with update",
+					"update_id",
+					update.UpdateID,
+				)
 			}
 		}
 	}()
 }
 
-func (c *Client) processQueue(ctx context.Context, q *Queue) {
+func (c *Client) processQueue(ctx context.Context, queue *Queue) {
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case u, ok := <-*q:
+			case update, ok := <-*queue:
 				if !ok {
 					return
 				}
 
-				if !validMessage(u.Message) {
+				if !validMessage(update.Message) {
 					continue
 				}
 
-				c.logger.InfoContext(ctx, "processing update", "update_id", u.UpdateID)
+				c.logger.InfoContext(
+					ctx,
+					"processing update",
+					"update_id",
+					update.UpdateID,
+				)
 
 				var err error
 
 				switch {
-				case u.Message.IsCommand():
-					c.logger.InfoContext(ctx, "processing command", "command", u.Message.Command())
-					err = c.commandHandler.Handle(ctx, &u)
+				case update.Message.IsCommand():
+					c.logger.InfoContext(
+						ctx,
+						"processing command",
+						"command",
+						update.Message.Command(),
+					)
+					err = c.commandHandler.Handle(ctx, &update)
 				default:
-					c.logger.InfoContext(ctx, "processing default message", "text", messageText(u.Message))
-					err = c.handleURL(ctx, &u)
+					c.logger.InfoContext(
+						ctx,
+						"processing default message",
+						"text",
+						messageText(update.Message),
+					)
+					err = c.handleURL(ctx, &update)
 				}
 
 				if err != nil {
@@ -86,31 +110,35 @@ func (c *Client) processQueue(ctx context.Context, q *Queue) {
 	}()
 }
 
-func (c *Client) handleURL(ctx context.Context, u *tgbotapi.Update) error {
-	url := messageText(u.Message)
+func (c *Client) handleURL(ctx context.Context, update *tgbotapi.Update) error {
+	url := messageText(update.Message)
 	if !c.connector.IsTrackValid(ctx, url) {
-		if _, err := c.client.Request(msg.DefaultMessage(
-			u.FromChat().ID,
+		_, err := c.client.Request(msg.DefaultMessage(
+			update.FromChat().ID,
 			msg.ErrorInvalidURL(),
-		)); err != nil {
-			return err
+		))
+		if err != nil {
+			return errors.Join(domain.ErrTelegramAPI, err)
 		}
+
 		return nil
 	}
 
-	m, err := c.client.Send(msg.DefaultMessage(
-		u.FromChat().ID,
+	message, err := c.client.Send(msg.DefaultMessage(
+		update.FromChat().ID,
 		msg.MetadataSearchInfo(),
 	))
 	if err != nil {
-		if _, err := c.client.Request(msg.DefaultEditMessage(
-			u.FromChat().ID,
-			m.MessageID,
+		_, err := c.client.Request(msg.DefaultEditMessage(
+			update.FromChat().ID,
+			message.MessageID,
 			msg.ErrorInternal(err),
-		)); err != nil {
+		))
+		if err != nil {
 			c.logger.ErrorContext(ctx, "edit message err", "error", err)
 		}
-		return err
+
+		return errors.Join(domain.ErrTelegramAPI, err)
 	}
 
 	trackID, err := c.processTrack(ctx, url)
@@ -118,12 +146,13 @@ func (c *Client) handleURL(ctx context.Context, u *tgbotapi.Update) error {
 		return err
 	}
 
-	if _, err := c.client.Request(msg.DefaultEditMessage(
-		u.FromChat().ID,
-		m.MessageID,
+	_, err = c.client.Request(msg.DefaultEditMessage(
+		update.FromChat().ID,
+		message.MessageID,
 		string(msg.TrackAdded(trackID)),
-	)); err != nil {
-		return err
+	))
+	if err != nil {
+		return errors.Join(domain.ErrTelegramAPI, err)
 	}
 
 	return nil
@@ -132,13 +161,13 @@ func (c *Client) handleURL(ctx context.Context, u *tgbotapi.Update) error {
 func (c *Client) processTrack(ctx context.Context, url string) (string, error) {
 	metadata, err := c.connector.TrackMetadataFromURL(ctx, url)
 	if err != nil {
-		return "", err
+		return "", errors.Join(domain.ErrConnectorInternal, err)
 	}
 
-	id, err := c.repository.AddTrack(metadata.AsTrack())
+	trackID, err := c.repository.AddTrack(metadata.AsTrack())
 	if err != nil {
-		return "", err
+		return "", errors.Join(domain.ErrRepositoryInternal, err)
 	}
 
-	return id, nil
+	return trackID, nil
 }

@@ -8,9 +8,8 @@ package telegram
 import (
 	"strings"
 
-	"trackposter/internal/config"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"trackposter/internal/config"
 )
 
 // validMessage checks if message is not nil and contains text or caption.

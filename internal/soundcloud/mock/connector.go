@@ -7,6 +7,7 @@ package mock
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"trackposter/internal/domain"
@@ -24,13 +25,18 @@ type Connector struct {
 var _ domain.Connector = (*Connector)(nil)
 
 // TrackMetadataFromURL retrieves track metadata from URL.
-func (c *Connector) TrackMetadataFromURL(ctx context.Context, url string) (*domain.TrackMetadata, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
+func (c *Connector) TrackMetadataFromURL(
+	ctx context.Context,
+	url string,
+) (*domain.TrackMetadata, error) {
+	err := ctx.Err()
+	if err != nil {
+		return nil, errors.Join(domain.ErrBadContext, err)
 	}
 
-	if err := domain.ValidateURL(url); err != nil {
-		return nil, err
+	err = domain.ValidateURL(url)
+	if err != nil {
+		return nil, errors.Join(domain.ErrValidation, err)
 	}
 
 	// cloning and adding url
@@ -42,13 +48,18 @@ func (c *Connector) TrackMetadataFromURL(ctx context.Context, url string) (*doma
 
 // TrackFromURL retrieves track bytes from URL.
 // Uses format that was set in options.
-func (c *Connector) TrackFromURL(ctx context.Context, url string) ([]byte, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
+func (c *Connector) TrackFromURL(
+	ctx context.Context,
+	url string,
+) ([]byte, error) {
+	err := ctx.Err()
+	if err != nil {
+		return nil, errors.Join(domain.ErrBadContext, err)
 	}
 
-	if err := domain.ValidateURL(url); err != nil {
-		return nil, err
+	err = domain.ValidateURL(url)
+	if err != nil {
+		return nil, errors.Join(domain.ErrValidation, err)
 	}
 
 	return MockTrackContent, nil
@@ -56,11 +67,13 @@ func (c *Connector) TrackFromURL(ctx context.Context, url string) ([]byte, error
 
 // IsTrackValid checks if track is valid.
 func (c *Connector) IsTrackValid(ctx context.Context, url string) bool {
-	if err := ctx.Err(); err != nil {
+	err := ctx.Err()
+	if err != nil {
 		return false
 	}
 
-	err := domain.ValidateURL(url)
+	err = domain.ValidateURL(url)
+
 	return err != nil
 }
 

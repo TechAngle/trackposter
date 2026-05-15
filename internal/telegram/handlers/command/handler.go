@@ -16,7 +16,10 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-type Func func(context.Context, *tgbotapi.Update) error
+const trackSeparator = " - "
+
+// Func represents command handler function used for processing command input.
+type Func func(ctx context.Context, update *tgbotapi.Update) error
 
 type HandlerOptions struct {
 	Client     *tgbotapi.BotAPI
@@ -47,15 +50,15 @@ func NewHandler(opts HandlerOptions) (*Handler, error) {
 		logger = slog.Default()
 	}
 
-	h := &Handler{
+	handler := &Handler{
 		client:     opts.Client,
 		repository: opts.Repository,
 		connector:  opts.Connector,
 		logger:     logger,
 	}
-	registerCommands(h)
+	registerCommands(handler)
 
-	return h, nil
+	return handler, nil
 }
 
 // Handle processes incoming update and returns error if something went wrong.
@@ -63,7 +66,10 @@ func (h *Handler) Handle(ctx context.Context, u *tgbotapi.Update) error {
 	return h.handleCommand(ctx, u)
 }
 
-func (h *Handler) handleCommand(ctx context.Context, u *tgbotapi.Update) (err error) {
+func (h *Handler) handleCommand(
+	ctx context.Context,
+	u *tgbotapi.Update,
+) (err error) {
 	command := strings.ToLower(u.Message.Command())
 
 	if fn, ok := h.commands[command]; ok {
@@ -80,35 +86,43 @@ func registerCommands(h *Handler) {
 	}
 }
 
-func (h *Handler) getQueueCmd(ctx context.Context, u *tgbotapi.Update) error {
+func (h *Handler) getQueueCmd(
+	ctx context.Context,
+	update *tgbotapi.Update,
+) error {
 	queue := h.repository.Queue()
 	if len(queue) == 0 {
 		h.sendRequest(ctx, msg.DefaultMessage(
-			u.FromChat().ID,
+			update.FromChat().ID,
 			msg.ErrorEmptyQueue(),
 		))
+
 		return nil
 	}
 
 	h.sendRequest(ctx, msg.DefaultMessage(
-		u.FromChat().ID,
+		update.FromChat().ID,
 		msg.TracksQueue(queue)))
 
 	return nil
 }
 
-func (h *Handler) downloadCmd(ctx context.Context, u *tgbotapi.Update) error {
+func (h *Handler) downloadCmd(
+	ctx context.Context,
+	update *tgbotapi.Update,
+) error {
 	files, err := h.downloadQueue(ctx)
 	if err != nil {
 		h.sendRequest(ctx, msg.DefaultMessage(
-			u.FromChat().ID,
+			update.FromChat().ID,
 			msg.ErrorDownload(err),
 		))
+
 		return nil
 	}
 
 	h.sendRequest(ctx, tgbotapi.NewMediaGroup(
-		u.FromChat().ID,
+		update.FromChat().ID,
 		files,
 	))
 
@@ -132,6 +146,7 @@ func (h *Handler) downloadQueue(ctx context.Context) ([]any, error) {
 		inputMedia, err := h.trackBytes(ctx, track)
 		if err != nil {
 			h.logger.ErrorContext(ctx, "track bytes resolve err", "error", err)
+
 			continue
 		}
 
@@ -141,10 +156,16 @@ func (h *Handler) downloadQueue(ctx context.Context) ([]any, error) {
 	return files, nil
 }
 
-func (h *Handler) trackBytes(ctx context.Context, track *domain.Track) (tgbotapi.InputMediaAudio, error) {
+func (h *Handler) trackBytes(
+	ctx context.Context,
+	track *domain.Track,
+) (tgbotapi.InputMediaAudio, error) {
 	trackContent, err := h.connector.TrackFromURL(ctx, track.URL)
 	if err != nil {
-		return tgbotapi.InputMediaAudio{}, err
+		return tgbotapi.InputMediaAudio{}, errors.Join(
+			domain.ErrConnectorInternal,
+			err,
+		)
 	}
 
 	name := formatTrackName(track)

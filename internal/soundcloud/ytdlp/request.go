@@ -90,7 +90,8 @@ func (r *CommandRequest) AddArgument(arg string, replace bool) {
 //
 // IMPORTANT: If failed to validate provided URL it will return an empty slice.
 func (r *CommandRequest) BuildArguments() []string {
-	if err := r.Validate(); err != nil {
+	err := r.Validate()
+	if err != nil {
 		return []string{}
 	}
 
@@ -114,7 +115,8 @@ func (r *CommandRequest) BuildArguments() []string {
 
 // Validate checks if provided URL in valid format.
 func (r *CommandRequest) Validate() error {
-	if _, err := url.ParseRequestURI(r.URL); err != nil {
+	_, err := url.ParseRequestURI(r.url)
+	if err != nil {
 		return domain.ErrInvalidURL
 	}
 
@@ -134,5 +136,6 @@ func defaultRequestArgs() map[string]string {
 		domain.EmbedThumbnail:      "",
 		"--audio-format":           "flac",
 	}
+
 	return args
 }

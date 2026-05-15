@@ -31,14 +31,14 @@ type envConfig struct {
 // Returns empty slice if string is empty.
 //
 // If some ID cannot be parsed it returns an error.
-func stringToIDList(s string) ([]int64, error) {
+func stringToIDList(str string) ([]int64, error) {
 	allowedIDs := []int64{}
 
-	if strings.TrimSpace(s) == "" {
+	if strings.TrimSpace(str) == "" {
 		return []int64{}, nil
 	}
 
-	parts := strings.SplitSeq(s, ", ")
+	parts := strings.SplitSeq(str, ", ")
 	for part := range parts {
 		i, err := strconv.ParseInt(part, 10, 64)
 		if err != nil {
@@ -55,7 +55,8 @@ func stringToIDList(s string) ([]int64, error) {
 //
 // Also returns an error if failed to load .env or parse allowed IDs list from it.
 func loadEnvConfig() (envConfig, error) {
-	if err := godotenv.Load(".env"); err != nil {
+	err := godotenv.Load(".env")
+	if err != nil {
 		return envConfig{}, errors.Join(domain.ErrLoadEnv, err)
 	}
 
@@ -100,18 +101,20 @@ func main() {
 	config, err := loadEnvConfig()
 	if err != nil {
 		logger.ErrorContext(ctx, "load config err", "error", err)
+
 		return
 	}
 
 	connector, err := initConnector()
 	if err != nil {
 		logger.ErrorContext(ctx, "connector init err", "error", err)
+
 		return
 	}
 
 	repository := initRepository()
 
-	c, err := telegram.NewClient(telegram.BotOptions{
+	client, err := telegram.NewClient(telegram.BotOptions{
 		Connector:  connector,
 		Repository: repository,
 		Logger:     &logger,
@@ -120,11 +123,13 @@ func main() {
 	})
 	if err != nil {
 		logger.ErrorContext(ctx, "bot init err", "error", err)
+
 		return
 	}
-	defer c.Stop(ctx)
+	defer client.Stop(ctx)
 
-	if err := c.Start(ctx); err != nil {
+	err = client.Start(ctx)
+	if err != nil {
 		logger.ErrorContext(ctx, "bot start err", "error", err)
 	}
 }

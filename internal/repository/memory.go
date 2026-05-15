@@ -64,18 +64,18 @@ func (q *MemoryQueue) AddTrack(track *domain.Track) (string, error) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
-	// generating id for track
-	id, err := uid.New()
+	// generating trackID for track
+	trackID, err := uid.New()
 	if err != nil {
 		return "", errors.Join(domain.ErrUUID, err)
 	}
 
 	q.queue = append(q.queue, &domain.TrackRecord{
-		ID:    id,
+		ID:    trackID,
 		Track: track,
 	})
 
-	return id, nil
+	return trackID, nil
 }
 
 // Queue returns current tracks queue.
