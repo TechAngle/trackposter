@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"os"
 	"os/exec"
 	"sync"
 
@@ -57,6 +58,9 @@ func (c *Connector) TrackMetadataFromURL(
 		domain.StdoutOutput,
 		domain.NoWarnings,
 	)
+	// Setting output to stderr, because yt-dlp often writes to it instead of
+	// default stdout.
+	req.SetStderr(buffer)
 	req.SetStdout(buffer)
 
 	cmd := c.newCommand(ctx, req)
@@ -155,6 +159,8 @@ func (c *Connector) trackValid(ctx context.Context, url string) bool {
 		domain.Quiet,
 		domain.NoWarnings,
 	)
+	req.SetStderr(os.Stderr)
+	req.SetStdout(os.Stdout)
 
 	cmd := c.newCommand(ctx, req)
 	// if url is not found - yt-dlp returns 404 and error exit code
