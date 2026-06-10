@@ -9,7 +9,10 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"trackposter/internal/domain"
+	"trackposter/internal/connector"
+	"trackposter/internal/model"
+	"trackposter/internal/repository"
+	"trackposter/internal/telegram/handler"
 	"trackposter/internal/telegram/template/msg"
 )
 
@@ -21,27 +24,27 @@ type Func func(ctx context.Context, update *tgbotapi.Update) error
 // HandlerOptions holds default options used in Handler.
 type HandlerOptions struct {
 	Client     *tgbotapi.BotAPI
-	Repository domain.Repository
-	Connector  domain.Connector
+	Repository repository.Repository
+	Connector  connector.Connector
 	Logger     *slog.Logger
 }
 
 // Handler defines logic for processing commands input.
 type Handler struct {
 	client     *tgbotapi.BotAPI
-	repository domain.Repository
-	connector  domain.Connector
+	repository repository.Repository
+	connector  connector.Connector
 	commands   map[string]Func
 	logger     *slog.Logger
 }
 
-var _ domain.TelegramHandler = (*Handler)(nil)
+var _ handler.TelegramHandler = (*Handler)(nil)
 
 // NewHandler creates new handler with preregistered commands.
 // Uses slog.Default() if logger value is nil.
 func NewHandler(opts HandlerOptions) (*Handler, error) {
 	if opts.Client == nil {
-		return nil, domain.ErrNilClient
+		return nil, handler.ErrNilClient
 	}
 
 	logger := opts.Logger
@@ -132,7 +135,7 @@ func (h *Handler) downloadCmd(
 func (h *Handler) downloadQueue(ctx context.Context) ([]any, error) {
 	queue := h.repository.Queue()
 	if len(queue) == 0 {
-		return nil, domain.ErrEmptyQueue
+		return nil, handler.ErrEmptyQueue
 	}
 
 	files := make([]any, 0, len(queue))
@@ -158,12 +161,12 @@ func (h *Handler) downloadQueue(ctx context.Context) ([]any, error) {
 
 func (h *Handler) trackBytes(
 	ctx context.Context,
-	track *domain.Track,
+	track *model.Track,
 ) (tgbotapi.InputMediaAudio, error) {
 	trackContent, err := h.connector.TrackFromURL(ctx, track.URL)
 	if err != nil {
 		return tgbotapi.InputMediaAudio{}, errors.Join(
-			domain.ErrConnectorInternal,
+			connector.ErrInternal,
 			err,
 		)
 	}
@@ -183,7 +186,7 @@ func (h *Handler) sendRequest(ctx context.Context, c tgbotapi.Chattable) {
 	}
 }
 
-func formatTrackName(track *domain.Track) string {
+func formatTrackName(track *model.Track) string {
 	var name strings.Builder
 	name.Grow(len(track.Author) + len(track.Title) + len(trackSeparator))
 	name.WriteString(track.Author)

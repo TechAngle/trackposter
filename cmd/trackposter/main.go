@@ -11,11 +11,23 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"trackposter/internal/domain"
+	"trackposter/internal/connector/ytdlp"
 	"trackposter/internal/logger"
 	"trackposter/internal/repository"
-	"trackposter/internal/soundcloud/ytdlp"
 	"trackposter/internal/telegram"
+)
+
+// Init error.
+var (
+	errDefaultOptions = errors.New("default options err")
+	errLoadEnv        = errors.New("load .env err")
+	errNewConnector   = errors.New("new connector")
+)
+
+// Parse error.
+var (
+	errUnmarshal    = errors.New("unmarshal err")
+	errInvalidEnvID = errors.New("parse int64 err")
 )
 
 type envConfig struct {
@@ -38,7 +50,7 @@ func stringToIDList(str string) ([]int64, error) {
 	for part := range parts {
 		i, err := strconv.ParseInt(part, 10, 64)
 		if err != nil {
-			return nil, errors.Join(domain.ErrInvalidEnvID, err)
+			return nil, errors.Join(errInvalidEnvID, err)
 		}
 
 		allowedIDs = append(allowedIDs, i)
@@ -55,11 +67,12 @@ func stringToIDList(str string) ([]int64, error) {
 func loadEnvConfig() (envConfig, error) {
 	err := godotenv.Load(".env")
 	if err != nil {
-		return envConfig{}, errors.Join(domain.ErrLoadEnv, err)
+		return envConfig{}, errors.Join(errLoadEnv, err)
 	}
 
 	// parsing allowed IDs string
 	allowedID := os.Getenv("ALLOWED_ID")
+
 	idList, err := stringToIDList(allowedID)
 	if err != nil {
 		return envConfig{}, err
@@ -75,12 +88,12 @@ func loadEnvConfig() (envConfig, error) {
 func initConnector() (*ytdlp.Connector, error) {
 	options, err := ytdlp.DefaultOptions()
 	if err != nil {
-		return nil, errors.Join(domain.ErrDefaultOptions, err)
+		return nil, errors.Join(errDefaultOptions, err)
 	}
 
 	connector, err := ytdlp.NewConnector(options)
 	if err != nil {
-		return nil, errors.Join(domain.ErrNewConnector, err)
+		return nil, errors.Join(errNewConnector, err)
 	}
 
 	return connector, nil

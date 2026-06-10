@@ -5,8 +5,11 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+)
 
-	"trackposter/internal/domain"
+// UUID error.
+var (
+	ErrUUID = errors.New("uuid err")
 )
 
 // New generates new UUID.
@@ -14,7 +17,7 @@ import (
 func New() (string, error) {
 	uid, err := uuid.NewRandom()
 	if err != nil {
-		return "", errors.Join(domain.ErrUUID, err)
+		return "", errors.Join(ErrUUID, err)
 	}
 
 	return uid.String(), nil

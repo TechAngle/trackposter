@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os/exec"
 
-	"trackposter/internal/domain"
+	"trackposter/internal/model"
 )
 
 // ConnectorOptions represents options for initializing yt-dlp connector.
@@ -16,7 +16,7 @@ type ConnectorOptions struct {
 	FFMpegPath string
 
 	// Format is audio type that will be used for downloading.
-	Format domain.AudioFormat
+	Format model.AudioFormat
 }
 
 // DefaultOptions returns default options for connector.
@@ -36,7 +36,7 @@ func DefaultOptions() (options ConnectorOptions, err error) {
 	return ConnectorOptions{
 		FFMpegPath: ffmpegPath,
 		YtDlpPath:  ytDlpPath,
-		Format:     domain.FLAC,
+		Format:     model.FLAC,
 	}, nil
 }
 
@@ -46,7 +46,7 @@ func DefaultOptions() (options ConnectorOptions, err error) {
 func findExec(execName string) (string, error) {
 	path, err := exec.LookPath(execName)
 	if err != nil {
-		return "", errors.Join(domain.ErrLookPath, err)
+		return "", errors.Join(ErrLookPath, err)
 	}
 
 	return path, nil

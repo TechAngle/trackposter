@@ -9,8 +9,10 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"trackposter/internal/domain"
-	"trackposter/internal/telegram/handlers/command"
+	"trackposter/internal/connector"
+	"trackposter/internal/repository"
+	"trackposter/internal/telegram/handler"
+	"trackposter/internal/telegram/handler/command"
 )
 
 // Queue represents channel for Telegram updates.
@@ -19,8 +21,8 @@ type Queue chan tgbotapi.Update
 // BotOptions holds required options by bot.
 type BotOptions struct {
 	AllowedIDs []int64
-	Connector  domain.Connector
-	Repository domain.Repository
+	Connector  connector.Connector
+	Repository repository.Repository
 	Logger     *slog.Logger
 	APIToken   string
 }
@@ -28,12 +30,12 @@ type BotOptions struct {
 // Client defines bot controller with handlers.
 type Client struct {
 	client         *tgbotapi.BotAPI
-	commandHandler domain.TelegramHandler
+	commandHandler handler.TelegramHandler
 	// urlHandler     domain.TelegramHandler
 	allowedIDs   []int64
 	messageQueue Queue
-	repository   domain.Repository
-	connector    domain.Connector
+	repository   repository.Repository
+	connector    connector.Connector
 	logger       *slog.Logger
 }
 
@@ -43,12 +45,12 @@ type Client struct {
 // If failed to init new Telegram Bot API client returns ErrClientInit.
 func NewClient(options BotOptions) (*Client, error) {
 	if strings.TrimSpace(options.APIToken) == "" {
-		return nil, domain.ErrInvalidToken
+		return nil, ErrInvalidToken
 	}
 
 	client, err := newClient(options.APIToken)
 	if err != nil {
-		return nil, errors.Join(domain.ErrClientInit, err)
+		return nil, errors.Join(ErrClientInit, err)
 	}
 
 	commandHandler, err := command.NewHandler(command.HandlerOptions{
@@ -58,7 +60,7 @@ func NewClient(options BotOptions) (*Client, error) {
 		Logger:     options.Logger.With("module", "CommandHandler"),
 	})
 	if err != nil {
-		return nil, errors.Join(domain.ErrHandlerInit, err)
+		return nil, errors.Join(ErrHandlerInit, err)
 	}
 
 	return &Client{
@@ -74,10 +76,10 @@ func NewClient(options BotOptions) (*Client, error) {
 
 // Start starts polling for client with default timeout.
 //
-// If client was not init returns ErrNilClient.
+// If client was not init returns ErrInvalidClient.
 func (c *Client) Start(ctx context.Context) error {
 	if c.client == nil {
-		return domain.ErrNilClient
+		return ErrInvalidClient
 	}
 
 	u := tgbotapi.NewUpdate(-1)
@@ -106,7 +108,7 @@ func (c *Client) Stop(ctx context.Context) {
 func newClient(token string) (*tgbotapi.BotAPI, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		return nil, errors.Join(domain.ErrTelegramAPI, err)
+		return nil, errors.Join(ErrTelegramAPI, err)
 	}
 
 	return bot, nil

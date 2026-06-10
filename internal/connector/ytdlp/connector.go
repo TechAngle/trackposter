@@ -11,8 +11,10 @@ import (
 	"os/exec"
 	"sync"
 
-	"trackposter/internal/domain"
+	"trackposter/internal/connector"
+	"trackposter/internal/model"
 	"trackposter/internal/pkg/pool"
+	"trackposter/internal/validator"
 )
 
 // Connector realizes logic for work with yt-dlp tool.
@@ -21,19 +23,19 @@ type Connector struct {
 
 	ytDlpPath      string
 	ffmpegPath     string
-	downloadFormat domain.AudioFormat
+	downloadFormat model.AudioFormat
 }
 
-var _ domain.Connector = (*Connector)(nil)
+var _ connector.Connector = (*Connector)(nil)
 
 // NewConnector creates new soundcloud connector based on yt-dlp.
 func NewConnector(options ConnectorOptions) (*Connector, error) {
 	if options.YtDlpPath == "" {
-		return nil, domain.ErrMissingYtDlp
+		return nil, ErrMissingYtDlp
 	}
 
 	if options.FFMpegPath == "" {
-		return nil, domain.ErrMissingFFMpeg
+		return nil, ErrMissingFFMpeg
 	}
 
 	return &Connector{
@@ -48,15 +50,15 @@ func NewConnector(options ConnectorOptions) (*Connector, error) {
 func (c *Connector) TrackMetadataFromURL(
 	ctx context.Context,
 	url string,
-) (metadata *domain.TrackMetadata, err error) {
+) (metadata *model.TrackMetadata, err error) {
 	buffer := pool.GetBuffer()
 	defer pool.PutBuffer(buffer)
 
 	req := NewRequest(
 		url,
-		domain.JSONMetadata,
-		domain.StdoutOutput,
-		domain.NoWarnings,
+		jsonMetadata,
+		stdoutOutput,
+		noWarnings,
 	)
 	// Setting output to stderr, because yt-dlp often writes to it instead of
 	// default stdout.
@@ -66,16 +68,16 @@ func (c *Connector) TrackMetadataFromURL(
 	cmd := c.newCommand(ctx, req)
 	err = cmd.Run()
 	if err != nil {
-		return nil, errors.Join(domain.ErrYtDlpCommand, err)
+		return nil, errors.Join(ErrYtDlpCommand, err)
 	}
 
-	var response domain.YtDlpMetadataResponse
+	var response ytDlpMetadataResponse
 
 	err = json.Unmarshal(buffer.Bytes(), &response)
 	if err != nil {
 		log.Println(buffer.String())
 
-		return nil, errors.Join(domain.ErrUnmarshal, err)
+		return nil, errors.Join(ErrUnmarshal, err)
 	}
 
 	metadata = metadataFromResponse(&response)
@@ -94,12 +96,12 @@ func (c *Connector) TrackFromURL(
 
 	req := NewRequest(
 		url,
-		domain.UseFFMpegConversion,
+		useFFMpegConversion,
 		"--audio-format", string(c.AudioFormat()),
-		domain.AddMetadata,
-		domain.EmbedMetadata,
-		domain.WriteThumbnail,
-		domain.StdoutOutput,
+		addMetadata,
+		embedMetadata,
+		writeThumbnail,
+		stdoutOutput,
 	)
 
 	req.SetStdout(buffer)
@@ -107,7 +109,7 @@ func (c *Connector) TrackFromURL(
 	cmd := c.newCommand(ctx, req)
 	err := cmd.Run()
 	if err != nil {
-		return nil, errors.Join(domain.ErrYtDlpCommand, err)
+		return nil, errors.Join(ErrYtDlpCommand, err)
 	}
 
 	return buffer.Bytes(), nil
@@ -115,7 +117,7 @@ func (c *Connector) TrackFromURL(
 
 // IsTrackValid checks if track is valid.
 func (c *Connector) IsTrackValid(ctx context.Context, url string) bool {
-	err := domain.ValidateURL(url)
+	err := validator.ValidateURL(url)
 	if err != nil {
 		return false
 	}
@@ -124,7 +126,7 @@ func (c *Connector) IsTrackValid(ctx context.Context, url string) bool {
 }
 
 // SetFormat updates audio format for downloading.
-func (c *Connector) SetFormat(format domain.AudioFormat) {
+func (c *Connector) SetFormat(format model.AudioFormat) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -132,7 +134,7 @@ func (c *Connector) SetFormat(format domain.AudioFormat) {
 }
 
 // AudioFormat returns currently used audio format for downloading.
-func (c *Connector) AudioFormat() domain.AudioFormat {
+func (c *Connector) AudioFormat() model.AudioFormat {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -155,9 +157,9 @@ func (c *Connector) newCommand(
 func (c *Connector) trackValid(ctx context.Context, url string) bool {
 	req := NewRequest(
 		url,
-		domain.Simulate,
-		domain.Quiet,
-		domain.NoWarnings,
+		simulate,
+		quiet,
+		noWarnings,
 	)
 	req.SetStderr(os.Stderr)
 	req.SetStdout(os.Stdout)
@@ -168,8 +170,8 @@ func (c *Connector) trackValid(ctx context.Context, url string) bool {
 }
 
 func metadataFromResponse(
-	response *domain.YtDlpMetadataResponse,
-) *domain.TrackMetadata {
+	response *ytDlpMetadataResponse,
+) *model.TrackMetadata {
 	description, ok := response.Description.(string)
 	if !ok {
 		description = ""
@@ -190,7 +192,7 @@ func metadataFromResponse(
 		timestamp = 0
 	}
 
-	return &domain.TrackMetadata{
+	return &model.TrackMetadata{
 		ID:             response.ID,
 		Title:          response.Title,
 		Uploader:       response.Uploader,

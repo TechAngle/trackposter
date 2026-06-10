@@ -1,4 +1,4 @@
-package domain
+package model
 
 // TrackRecord is a record representation for line.
 type TrackRecord struct {

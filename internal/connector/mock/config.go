@@ -1,6 +1,6 @@
 package mock
 
-import "trackposter/internal/domain"
+import "trackposter/internal/model"
 
 const (
 	mockDuration    = 214.5
@@ -10,7 +10,7 @@ const (
 
 var (
 	// MockTrack is a random track metadata for tests.
-	MockTrack domain.TrackMetadata = domain.TrackMetadata{
+	MockTrack model.TrackMetadata = model.TrackMetadata{
 		ID:             "666-dev-null",
 		Title:          "Never Gonna Give Your DOM Up",
 		Uploader:       "Rick Rolling Gopher",

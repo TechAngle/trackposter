@@ -3,7 +3,8 @@ package msg
 import (
 	"strings"
 
-	"trackposter/internal/domain"
+	"trackposter/internal/model"
+	"trackposter/internal/telegram/template"
 )
 
 const (
@@ -11,7 +12,7 @@ const (
 )
 
 // TrackAdded template when track was added to the line and contains its ID.
-func TrackAdded(trackID string) domain.MessageTemplate {
+func TrackAdded(trackID string) template.MessageTemplate {
 	var builder strings.Builder
 	builder.Grow(len(trackID) + averageInfoLen)
 	builder.WriteString(
@@ -20,11 +21,11 @@ func TrackAdded(trackID string) domain.MessageTemplate {
 	builder.WriteString(trackID)
 	builder.WriteString(`</code>.</b>`)
 
-	return domain.MessageTemplate(builder.String())
+	return template.MessageTemplate(builder.String())
 }
 
 // TracksQueue template for formatting tracks queue.
-func TracksQueue(tracks []*domain.Track) domain.MessageTemplate {
+func TracksQueue(tracks []*model.Track) template.MessageTemplate {
 	if len(tracks) == 0 {
 		return `<b>Queue is empty.</b>`
 	}
@@ -44,10 +45,10 @@ func TracksQueue(tracks []*domain.Track) domain.MessageTemplate {
 		builder.WriteString("\n")
 	}
 
-	return domain.MessageTemplate(builder.String())
+	return template.MessageTemplate(builder.String())
 }
 
 // MetadataSearchInfo template when looking for track metadata.
-func MetadataSearchInfo() domain.MessageTemplate {
+func MetadataSearchInfo() template.MessageTemplate {
 	return `<b>Starting looking for track metadata...</b>`
 }

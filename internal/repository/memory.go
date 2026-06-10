@@ -5,7 +5,7 @@ import (
 	"slices"
 	"sync"
 
-	"trackposter/internal/domain"
+	"trackposter/internal/model"
 	"trackposter/internal/uid"
 )
 
@@ -18,16 +18,16 @@ const (
 // []*domain.TrackRecord.
 type MemoryQueue struct {
 	mu    sync.RWMutex
-	queue []*domain.TrackRecord
+	queue []*model.TrackRecord
 }
 
-var _ domain.Repository = (*MemoryQueue)(nil)
+var _ Repository = (*MemoryQueue)(nil)
 
 // NewMemoryQueue creates new instance of MemoryQueue.
 func NewMemoryQueue() *MemoryQueue {
 	return &MemoryQueue{
 		mu:    sync.RWMutex{},
-		queue: make([]*domain.TrackRecord, 0),
+		queue: make([]*model.TrackRecord, 0),
 	}
 }
 
@@ -38,7 +38,7 @@ func (q *MemoryQueue) RemoveTrack(trackID string) error {
 
 	idx := q.trackIndex(trackID)
 	if idx == trackNotFound {
-		return domain.ErrTrackNotFound
+		return ErrTrackNotFound
 	}
 
 	q.queue = slices.Delete(q.queue, idx, idx+1)
@@ -48,7 +48,7 @@ func (q *MemoryQueue) RemoveTrack(trackID string) error {
 
 // TrackByID finds and returns track from queue . If track not found - returns
 // nil.
-func (q *MemoryQueue) TrackByID(trackID string) *domain.Track {
+func (q *MemoryQueue) TrackByID(trackID string) *model.Track {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
 
@@ -59,17 +59,17 @@ func (q *MemoryQueue) TrackByID(trackID string) *domain.Track {
 
 // AddTrack updates queue with new track.
 // Returns track id and error if occurred.
-func (q *MemoryQueue) AddTrack(track *domain.Track) (string, error) {
+func (q *MemoryQueue) AddTrack(track *model.Track) (string, error) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
 	// generating trackID for track
 	trackID, err := uid.New()
 	if err != nil {
-		return "", errors.Join(domain.ErrUUID, err)
+		return "", errors.Join(uid.ErrUUID, err)
 	}
 
-	q.queue = append(q.queue, &domain.TrackRecord{
+	q.queue = append(q.queue, &model.TrackRecord{
 		ID:    trackID,
 		Track: track,
 	})
@@ -78,7 +78,7 @@ func (q *MemoryQueue) AddTrack(track *domain.Track) (string, error) {
 }
 
 // Queue returns current tracks queue.
-func (q *MemoryQueue) Queue() []*domain.Track {
+func (q *MemoryQueue) Queue() []*model.Track {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
 
@@ -88,12 +88,12 @@ func (q *MemoryQueue) Queue() []*domain.Track {
 // trackIndex looks for track index in queue. Can return -1 if nothing was
 // found.
 func (q *MemoryQueue) trackIndex(trackID string) int {
-	return slices.IndexFunc(q.queue, func(t *domain.TrackRecord) bool {
+	return slices.IndexFunc(q.queue, func(t *model.TrackRecord) bool {
 		return t.ID == trackID
 	})
 }
 
-func (q *MemoryQueue) trackByID(trackID string) *domain.Track {
+func (q *MemoryQueue) trackByID(trackID string) *model.Track {
 	idx := q.trackIndex(trackID)
 	if idx == trackNotFound {
 		return nil
@@ -102,8 +102,9 @@ func (q *MemoryQueue) trackByID(trackID string) *domain.Track {
 	return q.queue[idx].Track
 }
 
-func (q *MemoryQueue) tracksFromQueue() []*domain.Track {
-	tracks := make([]*domain.Track, 0, len(q.queue))
+func (q *MemoryQueue) tracksFromQueue() []*model.Track {
+	tracks := make([]*model.Track, 0, len(q.queue))
+
 	for _, record := range q.queue {
 		tracks = append(tracks, record.Track)
 	}

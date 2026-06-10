@@ -3,7 +3,7 @@ package repository
 import (
 	"testing"
 
-	"trackposter/internal/soundcloud/mock"
+	"trackposter/internal/connector/mock"
 )
 
 var (

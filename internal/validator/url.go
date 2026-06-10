@@ -1,6 +1,7 @@
-package domain
+package validator
 
 import (
+	"errors"
 	"net/url"
 )
 
@@ -8,7 +9,7 @@ import (
 func ValidateURL(link string) error {
 	_, err := url.Parse(link)
 	if err != nil {
-		return ErrInvalidURL
+		return errors.Join(ErrInvalidURL, err)
 	}
 
 	return nil

@@ -7,7 +7,8 @@ import (
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
-	"trackposter/internal/domain"
+	"trackposter/internal/connector"
+	"trackposter/internal/repository"
 	"trackposter/internal/telegram/template/msg"
 )
 
@@ -114,7 +115,7 @@ func (c *Client) handleURL(ctx context.Context, update *tgbotapi.Update) error {
 			msg.ErrorInvalidURL(),
 		))
 		if err != nil {
-			return errors.Join(domain.ErrTelegramAPI, err)
+			return errors.Join(ErrTelegramAPI, err)
 		}
 
 		return nil
@@ -134,7 +135,7 @@ func (c *Client) handleURL(ctx context.Context, update *tgbotapi.Update) error {
 			c.logger.ErrorContext(ctx, "edit message err", "error", err)
 		}
 
-		return errors.Join(domain.ErrTelegramAPI, err)
+		return errors.Join(ErrTelegramAPI, err)
 	}
 
 	trackID, err := c.processTrack(ctx, url)
@@ -148,7 +149,7 @@ func (c *Client) handleURL(ctx context.Context, update *tgbotapi.Update) error {
 		string(msg.TrackAdded(trackID)),
 	))
 	if err != nil {
-		return errors.Join(domain.ErrTelegramAPI, err)
+		return errors.Join(ErrTelegramAPI, err)
 	}
 
 	return nil
@@ -157,12 +158,12 @@ func (c *Client) handleURL(ctx context.Context, update *tgbotapi.Update) error {
 func (c *Client) processTrack(ctx context.Context, url string) (string, error) {
 	metadata, err := c.connector.TrackMetadataFromURL(ctx, url)
 	if err != nil {
-		return "", errors.Join(domain.ErrConnectorInternal, err)
+		return "", errors.Join(connector.ErrInternal, err)
 	}
 
 	trackID, err := c.repository.AddTrack(metadata.AsTrack())
 	if err != nil {
-		return "", errors.Join(domain.ErrRepositoryInternal, err)
+		return "", errors.Join(repository.ErrInternal, err)
 	}
 
 	return trackID, nil

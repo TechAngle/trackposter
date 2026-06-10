@@ -1,12 +1,13 @@
 package ytdlp
 
 import (
+	"errors"
 	"io"
-	"net/url"
 	"strings"
 	"sync"
 
-	"trackposter/internal/domain"
+	"trackposter/internal/errs"
+	"trackposter/internal/validator"
 )
 
 const (
@@ -135,12 +136,12 @@ func (r *CommandRequest) BuildArguments() []string {
 
 // Validate checks if provided URL in valid format.
 func (r *CommandRequest) Validate() error {
-	_, err := url.ParseRequestURI(r.url)
-	if err != nil {
-		return domain.ErrInvalidURL
-	}
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 
-	return nil
+	err := validator.ValidateURL(r.url)
+
+	return errors.Join(errs.ErrValidate, err)
 }
 
 // defaultRequestArgs returns default options used for downloading files:
@@ -150,11 +151,11 @@ func (r *CommandRequest) Validate() error {
 //     -`.flac` audio format.
 func defaultRequestArgs() map[string]string {
 	args := map[string]string{
-		domain.UseFFMpegConversion: "",
-		domain.AddMetadata:         "",
-		domain.EmbedMetadata:       "",
-		domain.EmbedThumbnail:      "",
-		"--audio-format":           "flac",
+		useFFMpegConversion: "",
+		addMetadata:         "",
+		embedMetadata:       "",
+		embedThumbnail:      "",
+		"--audio-format":    "flac",
 	}
 
 	return args

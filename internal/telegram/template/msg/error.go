@@ -3,8 +3,8 @@ package msg
 import (
 	"html"
 
-	"trackposter/internal/domain"
 	"trackposter/internal/pkg/pool"
+	"trackposter/internal/telegram/template"
 )
 
 const (
@@ -15,7 +15,7 @@ const (
 // errorTemplate returns default template for error messages.
 //
 // Template look: ERROR: {message}.
-func errorTemplate(message string) domain.MessageTemplate {
+func errorTemplate(message string) template.MessageTemplate {
 	builder := pool.GetBuilder()
 	defer pool.PutBuilder(builder)
 
@@ -24,11 +24,11 @@ func errorTemplate(message string) domain.MessageTemplate {
 	builder.WriteString(html.EscapeString(message))
 	builder.WriteString("</i>")
 
-	return domain.MessageTemplate(builder.String())
+	return template.MessageTemplate(builder.String())
 }
 
 // ErrorInternal template when non-related to Telegram error occurred.
-func ErrorInternal(err error) domain.MessageTemplate {
+func ErrorInternal(err error) template.MessageTemplate {
 	builder := pool.GetBuilder()
 	defer pool.PutBuilder(builder)
 
@@ -39,22 +39,22 @@ func ErrorInternal(err error) domain.MessageTemplate {
 }
 
 // ErrorEmptyQueue template when tracks queue was found empty.
-func ErrorEmptyQueue() domain.MessageTemplate {
+func ErrorEmptyQueue() template.MessageTemplate {
 	return errorTemplate("Queue is empty.")
 }
 
 // ErrorTrackNotFound template when track was not found on platform.
-func ErrorTrackNotFound() domain.MessageTemplate {
+func ErrorTrackNotFound() template.MessageTemplate {
 	return errorTemplate("Track not found.")
 }
 
 // ErrorInvalidURL template when user has provided an invalid URL.
-func ErrorInvalidURL() domain.MessageTemplate {
+func ErrorInvalidURL() template.MessageTemplate {
 	return errorTemplate("Invalid URL.")
 }
 
 // ErrorDownload template when connector returned an error.
-func ErrorDownload(err error) domain.MessageTemplate {
+func ErrorDownload(err error) template.MessageTemplate {
 	builder := pool.GetBuilder()
 	defer pool.PutBuilder(builder)
 

@@ -1,26 +1,12 @@
-package domain
+package ytdlp
 
 import "encoding/json"
 
-// Command argument.
-const (
-	UseFFMpegConversion string = "-x"
-	AddMetadata         string = "--add-metadata"
-	EmbedMetadata       string = "--embed-metadata"
-	EmbedThumbnail      string = "--embed-thumbnail"
-	WriteThumbnail      string = "--write-thumbnail"
-	Simulate            string = "--simulate"
-	StdoutOutput        string = "-o -"
-	JSONMetadata        string = "-j"
-	Quiet               string = "--quiet"
-	NoWarnings          string = "--no-warnings"
-)
-
-// YtDlpMetadataResponse is structure which represents a whole response of
+// ytDlpMetadataResponse is structure which represents a whole response of
 // yt-dlp command.
 //
 //nolint:tagliatelle
-type YtDlpMetadataResponse struct {
+type ytDlpMetadataResponse struct {
 	ID          string      `json:"id"`
 	Uploader    string      `json:"uploader"`
 	UploaderID  string      `json:"uploader_id"`

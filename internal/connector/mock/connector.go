@@ -5,31 +5,34 @@ import (
 	"errors"
 	"sync"
 
-	"trackposter/internal/domain"
+	"trackposter/internal/connector"
+	"trackposter/internal/errs"
+	"trackposter/internal/model"
+	"trackposter/internal/validator"
 )
 
 // Connector provides predefined values from constants.
 type Connector struct {
 	mu sync.RWMutex
 
-	format domain.AudioFormat
+	format model.AudioFormat
 }
 
-var _ domain.Connector = (*Connector)(nil)
+var _ connector.Connector = (*Connector)(nil)
 
 // TrackMetadataFromURL retrieves track metadata from URL.
 func (c *Connector) TrackMetadataFromURL(
 	ctx context.Context,
 	url string,
-) (*domain.TrackMetadata, error) {
+) (*model.TrackMetadata, error) {
 	err := ctx.Err()
 	if err != nil {
-		return nil, errors.Join(domain.ErrBadContext, err)
+		return nil, errors.Join(errs.ErrBadContext, err)
 	}
 
-	err = domain.ValidateURL(url)
+	err = validator.ValidateURL(url)
 	if err != nil {
-		return nil, errors.Join(domain.ErrValidation, err)
+		return nil, errors.Join(errs.ErrValidate, err)
 	}
 
 	// cloning and adding url
@@ -47,12 +50,12 @@ func (c *Connector) TrackFromURL(
 ) ([]byte, error) {
 	err := ctx.Err()
 	if err != nil {
-		return nil, errors.Join(domain.ErrBadContext, err)
+		return nil, errors.Join(errs.ErrBadContext, err)
 	}
 
-	err = domain.ValidateURL(url)
+	err = validator.ValidateURL(url)
 	if err != nil {
-		return nil, errors.Join(domain.ErrValidation, err)
+		return nil, errors.Join(errs.ErrValidate, err)
 	}
 
 	return MockTrackContent, nil
@@ -65,13 +68,13 @@ func (c *Connector) IsTrackValid(ctx context.Context, url string) bool {
 		return false
 	}
 
-	err = domain.ValidateURL(url)
+	err = validator.ValidateURL(url)
 
 	return err != nil
 }
 
 // SetFormat updates audio format for downloading.
-func (c *Connector) SetFormat(format domain.AudioFormat) {
+func (c *Connector) SetFormat(format model.AudioFormat) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -79,7 +82,7 @@ func (c *Connector) SetFormat(format domain.AudioFormat) {
 }
 
 // AudioFormat returns currently used audio format for downloading.
-func (c *Connector) AudioFormat() domain.AudioFormat {
+func (c *Connector) AudioFormat() model.AudioFormat {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
