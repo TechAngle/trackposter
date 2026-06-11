@@ -31,12 +31,11 @@ type BotOptions struct {
 type Client struct {
 	client         *tgbotapi.BotAPI
 	commandHandler handler.TelegramHandler
-	// urlHandler     domain.TelegramHandler
-	allowedIDs   []int64
-	messageQueue Queue
-	repository   repository.Repository
-	connector    connector.Connector
-	logger       *slog.Logger
+	allowedIDs     []int64
+	messageQueue   Queue
+	repository     repository.Repository
+	connector      connector.Connector
+	logger         *slog.Logger
 }
 
 // NewClient creates new Bot structure with all defined fields.
