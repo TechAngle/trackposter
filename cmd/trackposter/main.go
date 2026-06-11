@@ -26,7 +26,6 @@ var (
 
 // Parse error.
 var (
-	errUnmarshal    = errors.New("unmarshal err")
 	errInvalidEnvID = errors.New("parse int64 err")
 )
 

@@ -140,8 +140,11 @@ func (r *CommandRequest) Validate() error {
 	defer r.mu.RUnlock()
 
 	err := validator.ValidateURL(r.url)
+	if err != nil {
+		return errors.Join(errs.ErrValidate, err)
+	}
 
-	return errors.Join(errs.ErrValidate, err)
+	return nil
 }
 
 // defaultRequestArgs returns default options used for downloading files:

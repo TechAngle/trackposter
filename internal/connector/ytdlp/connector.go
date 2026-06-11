@@ -14,7 +14,6 @@ import (
 	"trackposter/internal/connector"
 	"trackposter/internal/model"
 	"trackposter/internal/pkg/pool"
-	"trackposter/internal/validator"
 )
 
 // Connector realizes logic for work with yt-dlp tool.
@@ -117,11 +116,6 @@ func (c *Connector) TrackFromURL(
 
 // IsTrackValid checks if track is valid.
 func (c *Connector) IsTrackValid(ctx context.Context, url string) bool {
-	err := validator.ValidateURL(url)
-	if err != nil {
-		return false
-	}
-
 	return c.trackValid(ctx, url)
 }
 
@@ -163,6 +157,11 @@ func (c *Connector) trackValid(ctx context.Context, url string) bool {
 	)
 	req.SetStderr(os.Stderr)
 	req.SetStdout(os.Stdout)
+
+	err := req.Validate()
+	if err != nil {
+		return false
+	}
 
 	cmd := c.newCommand(ctx, req)
 	// if url is not found - yt-dlp returns 404 and error exit code

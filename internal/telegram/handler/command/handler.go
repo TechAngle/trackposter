@@ -148,7 +148,11 @@ func (h *Handler) downloadQueue(ctx context.Context) ([]any, error) {
 		)
 		inputMedia, err := h.trackBytes(ctx, track)
 		if err != nil {
-			h.logger.ErrorContext(ctx, "track bytes resolve err", "error", err)
+			h.logger.ErrorContext(
+				ctx,
+				"track bytes resolve err",
+				"error", err,
+			)
 
 			continue
 		}
