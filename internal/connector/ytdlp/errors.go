@@ -2,6 +2,7 @@ package ytdlp
 
 import "errors"
 
+// yt-dlp errors.
 var (
 	ErrYtDlpCommand  = errors.New("yt-dlp command err")
 	ErrMissingYtDlp  = errors.New("missing yt-dlp path")
