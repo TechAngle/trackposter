@@ -15,6 +15,9 @@ tasks:
     env:
       CGO_ENABLED: 0
 
+    sources:
+      - "**/*.go"
+    method: checksum
     cmds:
       # Test all package
       - go test -v ./...
@@ -30,6 +33,9 @@ tasks:
       CGO_ENABLED: 1
       CI: "{{.CI}}"
 
+    sources:
+      - "**/*.go"
+    method: checksum
     cmds:
       - go test -v ./...
       - go test -race ./...
