@@ -64,7 +64,7 @@ func stringToIDList(str string) ([]int64, error) {
 // Also returns an error if failed to load .env or parse allowed IDs list from
 // it.
 func loadEnvConfig() (envConfig, error) {
-	err := godotenv.Load(".env")
+	err := godotenv.Load()
 	if err != nil {
 		return envConfig{}, errors.Join(errLoadEnv, err)
 	}

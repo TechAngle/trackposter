@@ -1,0 +1,9 @@
+services:
+  bot:
+    build: .
+    container_name: trackposter
+    restart: unless-stopped
+    env_file: .env
+    working_dir: /app
+    volumes:
+      - ./.env:/app/.env
