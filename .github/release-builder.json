@@ -1,0 +1,21 @@
+{
+  "template": "#{{CHANGELOG}}",
+  "categories": [
+    {
+      "title": "## 🚀 Features",
+      "labels": ["feat"]
+    },
+    {
+      "title": "## 🐛 Fixes",
+      "labels": ["fix"]
+    }
+  ],
+  "ignore_labels": ["chore", "docs", "style", "test"],
+  "label_extractor": [
+    {
+      "pattern": "^(feat|fix|test|chore|docs|style|refactor|perf|build|ci)(?:\\(.+\\))?: (.*)",
+      "on_property": "title",
+      "target": "$1"
+    }
+  ]
+}

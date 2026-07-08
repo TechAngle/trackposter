@@ -1,0 +1,22 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - development
+      - main
+
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Task
+        uses: go-task/setup-task@v2
+
+      - name: Test code
+        run: task test
