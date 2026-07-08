@@ -7,9 +7,13 @@ import (
 
 // ValidateURL checks if provided URL can be parsed.
 func ValidateURL(link string) error {
-	_, err := url.Parse(link)
+	url, err := url.ParseRequestURI(link)
 	if err != nil {
 		return errors.Join(ErrInvalidURL, err)
+	}
+
+	if url.Host == "" || url.Scheme == "" {
+		return ErrInvalidURL
 	}
 
 	return nil
